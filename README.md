@@ -42,3 +42,30 @@ Package (stable release / master branch) will be meant to work with latest
 stable release of Kwant. Features that will depend on unreleased functionality
 (kwant's master branch) will be provided in the development (unstable) branch
 or release.
+
+Because project is based on discretizer sympy is required.
+Additional requirments are possible.
+
+
+# Tips about developing inside docker container
+
+One can use ``kwant-devenv`` for a development of this project.
+Assuming that ``semicon`` folder is ``~/projects/semicon`` do:
+```
+docker pull rafalskolasinski/kwant-devenv
+docker run -d -p 8888:8888 --name semicon \
+    -v ~/projects/semicon:/src -v ~/projects/semicon/notebooks:/notebooks \
+    rafalskolasinski/kwant-devenv
+```
+
+This will mount source code in ``/src`` and project notebooks in ``/notebooks``
+inside the containier. It will also start ``jupyter notebook`` server running
+at ``localhost:8888``.
+
+You can now use ``docker exec semicon build`` and ``docker exec semicon test``
+to build the package or run the tests respectively.
+
+You can enter bash inside the container by running
+```
+docker exec -it semicon bash
+```
