@@ -1,0 +1,17 @@
+image: kwant/testing
+
+stages:
+  - build
+  - test
+
+build package:
+  stage: build
+  script:
+    - python3 setup.py build
+
+
+test package:
+  stage: test
+  script:
+    - pip3 install -e .
+    - py.test -r w --cov semicon --cov-report term --flakes semicon
