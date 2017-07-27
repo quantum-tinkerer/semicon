@@ -69,3 +69,8 @@ You can enter bash inside the container by running
 ```
 docker exec -it semicon bash
 ```
+
+Nicely formatted output of tests (colors):
+```
+docker exec -it semicon test -v
+```
