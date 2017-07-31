@@ -3,6 +3,11 @@
                 Burt symmetrization of Kane Hamiltonian
 --------------------------------------------------------------------------
 
+This is explicit implementation of Hamiltonian in Sympy.
+Semicon is using serialized version as a string, explicit implementation is
+used in tests.
+
+
 References:
 [1] E. O. Kane, in Physics of III-V-Compounds, edited by R. K. Willardson and
     A. C. Beer, Vol. 1 of Semiconductors and Semimetals Academic Press,
@@ -24,13 +29,13 @@ kx, ky, kz = sympy.symbols('k_x k_y k_z', commutative=False)
 
 # Symbols
 Ec, Ac, P, M, L = sympy.symbols('E_c A_c P M L', commutative=False)
-N, Np, Nm, Delta, kappa = sympy.symbols('N N_+ N_- Delta kappa', commutative=False)
+N, Np, Nm = sympy.symbols('N N_+ N_-', commutative=False)
 
 
 # Gamma parameters
 E0, Ev, g0 = sympy.symbols('E_0 E_v gamma_0', commutative=False)
 g1, g2, g3 = sympy.symbols("gamma_1 gamma_2 gamma_3", commutative=False)
-Delta, kappa = sympy.symbols('Delta kappa', commutative=False)
+Delta, kappa = sympy.symbols('Delta_0 kappa', commutative=False)
 P, mu, gbar = sympy.symbols('P mu gammabar', commutative=False)
 hbar, m0 = sympy.symbols("hbar, m_0")
 

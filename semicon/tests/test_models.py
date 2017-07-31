@@ -1,12 +1,12 @@
 import kwant
 import sympy
 
-from semicon.models.serialized import serialized_kp
-from semicon.models.explicit_foreman import foreman as reference_foreman
+from semicon.kp_models.serialized import serialized_kp
+from semicon.kp_models.explicit_foreman import foreman as reference_foreman
 
 
 def test_serialized_foreman():
-    varied_parameters = ['E_0', 'E_v', 'Delta', 'P', 'kappa', 'g',
+    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g',
                      'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
     substitutions = {v: v+'(x, y, z)' for v in varied_parameters}
