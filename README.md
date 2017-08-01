@@ -46,6 +46,23 @@ or release.
 Because project is based on discretizer sympy is required.
 Additional requirments are possible.
 
+# Installation
+As this package is pure python standard python installation from sources with
+```
+python setup.py build
+python setup.py install
+```
+should be working without problems. The only non-trivial dependency, Kwant, that
+could cause problem if not installed beforehand can be either obtained via
+``conda`` or any other installation means explained on 
+its [homepage](https://kwant-project.org/).
+
+Direct installation from git is also possible (and favoured as long as conda 
+package is not out there):
+```
+pip install git+https://gitlab.kwant-project.org/r-j-skolasinski/semicon.git
+```
+
 
 # Tips about developing inside docker container
 
