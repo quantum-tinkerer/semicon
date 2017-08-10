@@ -1,4 +1,5 @@
-from .kp_models.serialized import serialized_kp
+import os
+import json
 import kwant
 
 
@@ -7,6 +8,23 @@ varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g',
                      'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
 
+##### read cache
+def _load_cache():
+    """Load cached models.
+
+    File semicon/kp_models/cache.json should be created on package build.
+    """
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
+    with open(fname) as f:
+        models_cache = json.load(f)
+    return models_cache
+
+_models_cache = _load_cache()
+
+
+
+##### module functions
 def validate_coords(coords):
     """Validate coords in the same way it happens in kwant.continuum."""
     coords = list(coords)
@@ -18,9 +36,10 @@ def validate_coords(coords):
     return coords
 
 
-def kane(coords):
+def foreman(coords):
+    """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization."""
     coords = validate_coords(coords)
     str_coords ='({})'.format(", ".join(coords))
 
     subs = {v: v + str_coords for v in varied_parameters}
-    return kwant.continuum.sympify(serialized_kp, locals=subs)
+    return kwant.continuum.sympify(_models_cache['foreman'], locals=subs)
