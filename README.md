@@ -62,7 +62,7 @@ package is not out there):
 ```
 pip install git+https://gitlab.kwant-project.org/r-j-skolasinski/semicon.git
 ```
-note: this is currently not working due to [issue 11](https://gitlab.kwant-project.org/r-j-skolasinski/semicon/issues/11)
+note: this is currently not working due to [issue 11](https://gitlab.kwant-project.org/r-j-skolasinski/semicon/issues/11).
 One can use ``python setup.py develop`` or ``pip install -e .`` until this issue is fixed.
 
 
