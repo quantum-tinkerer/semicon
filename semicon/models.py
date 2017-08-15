@@ -36,10 +36,14 @@ def validate_coords(coords):
     return coords
 
 
-def foreman(coords):
+def foreman(coords=None):
     """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization."""
-    coords = validate_coords(coords)
-    str_coords ='({})'.format(", ".join(coords))
 
-    subs = {v: v + str_coords for v in varied_parameters}
+    if coords is not None:
+        coords = validate_coords(coords)
+        str_coords ='({})'.format(", ".join(coords))
+        subs = {v: v + str_coords for v in varied_parameters}
+    else:
+        subs = {}
+
     return kwant.continuum.sympify(_models_cache['foreman'], locals=subs)
