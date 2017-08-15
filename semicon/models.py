@@ -2,10 +2,13 @@ import os
 import json
 import kwant
 
+import sympy
+
 
 # parameters varied in k.p Hamiltonian
 varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g',
-                     'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
+                     'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3',
+                     'g', 'mu_B', 'kappa', 'q']
 
 
 ##### read cache
@@ -36,9 +39,20 @@ def validate_coords(coords):
     return coords
 
 
-def foreman(coords=None):
-    """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization."""
+def foreman(coords=None, components=('foreman',)):
+    """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization.
 
+    Parameters
+    ----------
+    coords : sequence of strings
+        Spatial dependents of parameters, e.g. ``coords='xyz'``
+    components : sequence of strings
+        k.p components, .e.g. ``components=['foreman', 'zeeman']``
+
+    Returns
+    -------
+    kp_hamiltonian : sympy object
+    """
     if coords is not None:
         coords = validate_coords(coords)
         str_coords ='({})'.format(", ".join(coords))
@@ -46,4 +60,9 @@ def foreman(coords=None):
     else:
         subs = {}
 
-    return kwant.continuum.sympify(_models_cache['foreman'], locals=subs)
+    hamiltonian_components = [
+        kwant.continuum.sympify(_models_cache[c], locals=subs)
+        for c in components
+    ]
+
+    return sympy.ImmutableMatrix(sympy.MatAdd(*hamiltonian_components))

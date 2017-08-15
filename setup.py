@@ -32,10 +32,14 @@ def load_submodule(name):
 BASE_DIR = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'semicon')
 def build_cache():
     explicit_foreman = load_submodule('semicon.kp_models.explicit_foreman')
+    explicit_zeeman = load_submodule('semicon.kp_models.explicit_zeeman')
 
     print("building models' cache")
     fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
-    data = {'foreman': str(explicit_foreman.foreman)}
+    data = {
+        'foreman': str(explicit_foreman.foreman),
+        'zeeman': str(explicit_zeeman.zeeman),
+    }
     with open(fname, 'w') as f:
         json.dump(data, f)
 
