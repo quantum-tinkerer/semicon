@@ -31,6 +31,9 @@ def load_submodule(name):
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semicon')
 cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
+csv_fnames =  os.path.join(BASE_DIR, 'databank', '*.csv')
+
+
 def build_cache():
     explicit_foreman = load_submodule('semicon.kp_models.explicit_foreman')
     explicit_zeeman = load_submodule('semicon.kp_models.explicit_zeeman')
@@ -46,6 +49,7 @@ def build_cache():
 
 
 ##### standard python build
+print("path", BASE_DIR)
 
 classifiers = """\
     Development Status :: 3 - Alpha
@@ -72,7 +76,7 @@ setup(
 
 
     packages=find_packages('.'),
-    package_data={'': [cache_fname]},
+    package_data={'': [cache_fname, csv_fnames]},
 
     setup_requires=['sympy >= 0.7.6'],
     install_requires=['kwant >= 1.3', 'sympy >= 0.7.6', 'pandas >= 0.19.2'],
