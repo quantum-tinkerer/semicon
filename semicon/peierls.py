@@ -45,7 +45,7 @@ def get_phase(A):
 
         output[i] = output[i] * Ai
 
-    return (sympy.pi/phi_0) * sum(output)
+    return (2*sympy.pi/phi_0) * sum(output)
 
 
 def apply(tb_hamiltonian, coords, *, A):
