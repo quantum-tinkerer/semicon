@@ -43,46 +43,84 @@ def load_params(bankname):
 
 
 ###### renormalization of parameters
-def renormalize_parameters(dict_pars, new_gamma_0=None):
+def renormalize_parameters(dict_pars, new_gamma_0=None,
+                           bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
     """Renormalize parameters"""
 
-    param = SimpleNamespace(**dict_pars)
+    output = {}
 
-    e0_plus_d0 = param.E_0 + param.Delta_0
-    e0_plus_23d0 = param.E_0 + (2 / 3) * param.Delta_0
+    p = SimpleNamespace(**dict_pars)
+    Ep = p.P**2 / taa
+    output['P'] = p.P
+    output['E_v'] = p.E_v
+    output['E_0'] = p.E_0
+    output['Delta_0'] = p.Delta_0
 
-    scale1 = param.E_0 * e0_plus_d0 / e0_plus_23d0
+    # gamma_6c parameters
+    if 'gamma_6c' in bands:
+        # do special steps if user want to renormalize gamma_0
+        if new_gamma_0 is not None:
+            if ('gamma_8v' not in bands) or ('gamma_7v' not in bands):
+                raise ValueError('Cannot set different "gamma_0" '
+                                 'without at least one hole band.')
+            scale = 0
+            if 'gamma_8v' in bands:
+                scale += (2/3) / p.E_0
 
-    if new_gamma_0 is not None:
-        scale1 = taa * (param.gamma_0 - new_gamma_0) * scale1
-        param.P = np.sqrt(scale1)
-        param.gamma_0 = new_gamma_0
-    else:
-        param.gamma_0 -= (param.P**2 / taa) / scale1
+            if 'gamma_7v' in bands:
+                scale += (1/3) / (p.E_0 + p.Delta_0)
 
-    scale2 = (param.P**2 / taa) / param.E_0
+            Ep = (p.gamma_0 - new_gamma_0) / scale
+            output['P'] = np.sqrt(taa * Ep)
+            output['gamma_0'] = new_gamma_0
 
-    param.gamma_1 -= (1 / 3) * scale2
-    param.gamma_2 -= (1 / 6) * scale2
-    param.gamma_3 -= (1 / 6) * scale2
-    param.kappa -= (1 / 6) * scale2
+        else:
+            output['gamma_0'] = p.gamma_0
+            if 'gamma_8v' in bands:
+                output['gamma_0'] -= (2/3) * (Ep / p.E_0)
 
-    param.g_c += (2 / 3) * scale2 * (param.Delta_0 / e0_plus_d0)
+            if 'gamma_7v' in bands:
+                output['gamma_0'] -= (1/3) * (Ep / (p.E_0 + p.Delta_0))
 
-    return param.__dict__
+        # g-factor
+        output['g_c'] = p.g_c
+        if 'gamma_8v' in bands:
+            output['g_c'] += (2/3) * (Ep / p.E_0)
+
+        if 'gamma_7v' in bands:
+            output['g_c'] -= (2/3) * (Ep / (p.E_0 + p.Delta_0))
+
+    # now the gamma_7v and gamma_8v parameters
+    if ('gamma_8v' in bands) or ('gamma_7v' in bands):
+        output['gamma_1'] = p.gamma_1
+        output['gamma_2'] = p.gamma_2
+        output['gamma_3'] = p.gamma_3
+        output['kappa'] = p.kappa
+        output['q'] = p.q
+
+        if 'gamma_6c' in bands:
+            output['gamma_1'] -= (1/3) * (Ep / p.E_0)
+            output['gamma_2'] -= (1/6) * (Ep / p.E_0)
+            output['gamma_3'] -= (1/6) * (Ep / p.E_0)
+            output['kappa'] -= (1/6) * (Ep / p.E_0)
+
+    return output
 
 
 ###### system specific parameter functions
-def bulk(bank, material, new_gamma_0=None):
+def bulk(bank, material, new_gamma_0=None, valence_band_offset=0.0,
+         bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
     """Get bulk parameters of a specified material."""
     df_pars = load_params(bank)
     dict_pars = df_pars.loc[material].to_dict()
     dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
-    return renormalize_parameters(dict_pars, new_gamma_0)
+    dict_pars['E_v'] = valence_band_offset
+    return renormalize_parameters(dict_pars, new_gamma_0, bands)
 
 
 def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,
-            new_gamma_0=None, extra_constants=None):
+            new_gamma_0=None, bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
+            extra_constants=None):
     """Get parameter functions for a specified 2D system.
 
 
@@ -110,11 +148,11 @@ def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,
     df_pars = load_params(bank)
 
     parameters = []
-    for mat_name, offset in zip(materials, valence_band_offsets):
-        dict_pars = df_pars.loc[mat_name].to_dict()
+    for material, offset in zip(materials, valence_band_offsets):
+        dict_pars = df_pars.loc[material].to_dict()
         dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
         dict_pars['E_v'] = offset
-        dict_pars = renormalize_parameters(dict_pars, new_gamma_0)
+        dict_pars = renormalize_parameters(dict_pars, new_gamma_0, bands)
         parameters.append(dict_pars)
 
     walls = get_walls(grid_spacing, widths)

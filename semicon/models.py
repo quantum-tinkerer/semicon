@@ -39,7 +39,8 @@ def validate_coords(coords):
     return coords
 
 
-def foreman(coords=None, components=('foreman',)):
+def foreman(coords=None, components=('foreman',),
+            bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
     """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization.
 
     Parameters
@@ -47,7 +48,9 @@ def foreman(coords=None, components=('foreman',)):
     coords : sequence of strings
         Spatial dependents of parameters, e.g. ``coords='xyz'``
     components : sequence of strings
-        k.p components, .e.g. ``components=['foreman', 'zeeman']``
+        k.p components, e.g. ``components=['foreman', 'zeeman']``
+    bands : sequence of strings
+        k.p bands, e.g. ``bands=['gamma_6c']
 
     Returns
     -------
@@ -65,4 +68,21 @@ def foreman(coords=None, components=('foreman',)):
         for c in components
     ]
 
-    return sympy.ImmutableMatrix(sympy.MatAdd(*hamiltonian_components))
+    hamiltonian = sympy.ImmutableMatrix(sympy.MatAdd(*hamiltonian_components))
+
+    # if the default bands are selected, we just return the "hamiltonian"
+    if tuple(bands) == ('gamma_6c', 'gamma_8v', 'gamma_7v'):
+        return hamiltonian
+
+    band_indices = {
+        'gamma_6c': [0, 1],
+        'gamma_8v': [2, 3, 4, 5],
+        'gamma_7v': [6, 7]
+    }
+
+    for b in bands:
+        if b not in band_indices:
+            raise ValueError("{} is not a proper band".format(b))
+
+    indices = sum([band_indices[band] for band in bands], [])
+    return hamiltonian[:, indices][indices, :]
