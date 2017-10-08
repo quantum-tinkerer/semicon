@@ -54,16 +54,14 @@ python setup.py install
 ```
 should be working without problems. The only non-trivial dependency, Kwant, that
 could cause problem if not installed beforehand can be either obtained via
-``conda`` or any other installation means explained on 
+``conda`` or any other installation means explained on
 its [homepage](https://kwant-project.org/).
 
-Direct installation from git is also possible (and favoured as long as conda 
+Direct installation from git is also possible (and favoured as long as conda
 package is not out there):
 ```
 pip install git+https://gitlab.kwant-project.org/r-j-skolasinski/semicon.git
 ```
-note: this is currently not working due to [issue 11](https://gitlab.kwant-project.org/r-j-skolasinski/semicon/issues/11).
-One can use ``python setup.py develop`` or ``pip install -e .`` until this issue is fixed.
 
 
 # Tips about developing inside docker container
