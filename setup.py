@@ -29,18 +29,19 @@ def load_submodule(name):
     return imp.load_module(name, f, path[0], info)
 
 
-BASE_DIR = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'semicon')
+BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semicon')
+cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
 def build_cache():
     explicit_foreman = load_submodule('semicon.kp_models.explicit_foreman')
     explicit_zeeman = load_submodule('semicon.kp_models.explicit_zeeman')
 
     print("building models' cache")
-    fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
+
     data = {
         'foreman': str(explicit_foreman.foreman),
         'zeeman': str(explicit_zeeman.zeeman),
     }
-    with open(fname, 'w') as f:
+    with open(cache_fname, 'w') as f:
         json.dump(data, f)
 
 
@@ -71,6 +72,7 @@ setup(
 
 
     packages=find_packages('.'),
+    package_data={'': [cache_fname]},
 
     setup_requires=['sympy >= 0.7.6'],
     install_requires=['kwant >= 1.3', 'sympy >= 0.7.6', 'pandas >= 0.19.2'],
