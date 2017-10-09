@@ -15,7 +15,7 @@ val_hbar = physical_constants['Planck constant over 2 pi in eV s'][0]
 val_m0 = physical_constants['electron mass energy equivalent in MeV'][0]
 val_m0 = val_m0 / (c*10**9)**2 * 10**6
 val_mu_B = physical_constants['Bohr magneton in eV/T'][0]
-val_phi_0 = physical_constants['mag. flux quantum'][0] * (10**9)**2
+val_phi_0 = 2 * physical_constants['mag. flux quantum'][0] * (10**9)**2
 taa = val_hbar**2 / 2.0 / val_m0
 
 constants = {
