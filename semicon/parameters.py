@@ -109,13 +109,20 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
 
 ###### system specific parameter functions
 def bulk(bank, material, new_gamma_0=None, valence_band_offset=0.0,
-         bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
+         bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
+         extra_constants=None):
     """Get bulk parameters of a specified material."""
     df_pars = load_params(bank)
     dict_pars = df_pars.loc[material].to_dict()
     dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
     dict_pars['E_v'] = valence_band_offset
-    return renormalize_parameters(dict_pars, new_gamma_0, bands)
+
+    output = renormalize_parameters(dict_pars, new_gamma_0, bands)
+
+    if extra_constants is not None:
+        output.update(extra_constants)
+
+    return output
 
 
 def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,

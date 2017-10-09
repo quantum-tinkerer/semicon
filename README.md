@@ -91,3 +91,9 @@ Nicely formatted output of tests (colors):
 ```
 docker exec -it semicon test -v
 ```
+
+To get matplotlib2 one can
+```
+docker exec -it semicon apt-get remove python3-matplotlib
+docker exec -it semicon pip3 install matplotlib==2*
+```
