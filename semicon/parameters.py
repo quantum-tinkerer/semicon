@@ -149,7 +149,7 @@ def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,
         return interp1d(xs, ys, fill_value='extrapolate')
 
     # varied parameters should probably be a union of available k.p parameters,
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c',
+    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
                          'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
     df_pars = load_params(bank)

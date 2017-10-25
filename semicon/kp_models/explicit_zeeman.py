@@ -3,8 +3,8 @@ import sympy.physics.matrices
 
 
 # ************** symbols **************
-g, u_b, kappa, q = sympy.symbols("g, mu_B, kappa, q", commutative=False)
-Bx, By, Bz = sympy.symbols('B_x, B_y, B_z', real=True)
+g, kappa, q = sympy.symbols("g_c, kappa, q", commutative=False)
+u_b, Bx, By, Bz = sympy.symbols('mu_B, B_x, B_y, B_z', real=True)
 
 
 # ************** Magnetic field Hamiltonian (Winkler form) **************
@@ -48,5 +48,5 @@ zeeman = sympy.BlockMatrix([[B_6c6c, sympy.zeros(2,4), sympy.zeros(2,2)],
                             [sympy.zeros(2,2), B_7v8v, B_7v7v]]).as_explicit()
 
 
-Bx, By, Bz = sympy.symbols('B_x B_y B_z')
-zeeman = zeeman.subs({sympy.Symbol(s.name, real=True): s for s in [Bx, By, Bz]})
+u_b, Bx, By, Bz = sympy.symbols('mu_B B_x B_y B_z')
+zeeman = zeeman.subs({sympy.Symbol(s.name, real=True): s for s in [u_b, Bx, By, Bz]})

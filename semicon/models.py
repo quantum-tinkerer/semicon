@@ -6,9 +6,8 @@ import sympy
 
 
 # parameters varied in k.p Hamiltonian
-varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g',
-                     'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3',
-                     'g', 'mu_B', 'kappa', 'q']
+varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
+                     'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
 
 ##### read cache
