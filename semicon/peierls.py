@@ -17,7 +17,7 @@ def get_phase(A):
     ----------
     A : string
         String representing vector potential. For example: "[-B_z * y, 0, 0]"
-        Despite dimensionality of the system A must be in 3D kartesian coords.
+        Despite dimensionality of the system A must be in 3D cartesian coords.
 
     Returns:
     phase : sympy.Expr
@@ -56,7 +56,7 @@ def apply(tb_hamiltonian, coords, *, A):
     ----------
     A : string
         String representing vector potential. For example: "[-B_z * y, 0, 0]"
-        Despite dimensionality of the system A must be in 3D kartesian coords.
+        Despite dimensionality of the system A must be in 3D cartesian coords.
 
     coords : sequence of strings
         Discrete coordinates.
