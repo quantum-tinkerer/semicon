@@ -12,14 +12,14 @@ import matplotlib.pyplot as plt
 ######  general constants and globals
 c = physical_constants['speed of light in vacuum'][0]
 val_hbar = physical_constants['Planck constant over 2 pi in eV s'][0]
-val_m0 = physical_constants['electron mass energy equivalent in MeV'][0]
-val_m0 = val_m0 / (c*10**9)**2 * 10**6
+val_m_0 = physical_constants['electron mass energy equivalent in MeV'][0]
+val_m_0 *= 1e6 / (c*1e9)**2
 val_mu_B = physical_constants['Bohr magneton in eV/T'][0]
-val_phi_0 = 2 * physical_constants['mag. flux quantum'][0] * (10**9)**2
-taa = val_hbar**2 / 2.0 / val_m0
+val_phi_0 = 2 * physical_constants['mag. flux quantum'][0] * (1e9)**2
+taa = val_hbar**2 / 2.0 / val_m_0
 
 constants = {
-    'm_0': val_m0,
+    'm_0': val_m_0,
     'phi_0': val_phi_0,
     'mu_B': val_mu_B,
     'hbar': val_hbar
