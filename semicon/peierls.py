@@ -2,7 +2,6 @@ import sympy
 import kwant
 
 
-
 a = sympy.symbols('a')
 phi_0 = sympy.symbols('phi_0')
 
@@ -48,7 +47,7 @@ def get_phase(A):
     return (2*sympy.pi/phi_0) * sum(output)
 
 
-def apply(tb_hamiltonian, coords, *, A):
+def apply(tb_hamiltonian, coords, *, A, signs=None):
     """Modify tight-binding Hamiltonian to include Peierl's substitution.
 
 
@@ -61,6 +60,9 @@ def apply(tb_hamiltonian, coords, *, A):
     coords : sequence of strings
         Discrete coordinates.
 
+    signs : sequence of integers
+        The relative signs of the phase-factors for the different orbitals.
+
     Returns
     -------
     discrete_hamiltonian: dict
@@ -72,12 +74,17 @@ def apply(tb_hamiltonian, coords, *, A):
         raise ValueError('Vector potential should be a string.')
 
     phase_ij = get_phase(A)
+    if signs:
+        phase_factors = [sympy.exp(s * sympy.I * phase_ij) for s in signs]
+        phase_factors = sympy.diag(*phase_factors)
+    else:
+        phase_factors = sympy.exp(sympy.I * phase_ij)
+
     target = [kwant.continuum.sympify(c) for c in sorted(coords)]
     target_subs = {xi: pos for xi, pos in zip(ri, target)}
 
     for offset, hopping in tb_hamiltonian.items():
-        hopping = hopping * sympy.exp(sympy.I * phase_ij)
-
+        hopping = hopping * phase_factors
         source = [c + n * a for c, n in zip(target, offset)]
         source_subs = {xj: pos for xj, pos in zip(rj, source)}
         tb_hamiltonian[offset] = hopping.subs(target_subs).subs(source_subs)
