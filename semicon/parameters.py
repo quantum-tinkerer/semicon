@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 
+import scipy.constants
 from scipy.constants import physical_constants
 from scipy.interpolate import interp1d
 from types import SimpleNamespace
@@ -10,13 +11,12 @@ import matplotlib.pyplot as plt
 
 
 ######  general constants and globals
-c = physical_constants['speed of light in vacuum'][0]
-val_hbar = physical_constants['Planck constant over 2 pi in eV s'][0]
-val_m_0 = physical_constants['electron mass energy equivalent in MeV'][0]
-val_m_0 *= 1e6 / (c*1e9)**2
+c = scipy.constants.c
+val_hbar = scipy.constants.hbar / scipy.constants.eV
+val_m_0 = scipy.constants.m_e / scipy.constants.e / (1e9)**2
 val_mu_B = physical_constants['Bohr magneton in eV/T'][0]
 val_phi_0 = 2 * physical_constants['mag. flux quantum'][0] * (1e9)**2
-taa = val_hbar**2 / 2.0 / val_m_0
+taa = val_hbar**2 / 2 / val_m_0
 
 constants = {
     'm_0': val_m_0,
