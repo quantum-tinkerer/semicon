@@ -33,7 +33,7 @@ Tzx = 1 / (2 * sympy.sqrt(6)) * sympy.Matrix([[-1, 0, sympy.sqrt(3), 0],
                                               [0, sympy.sqrt(3), 0, -1]])
 
 Txy = sympy.I / sympy.sqrt(6) * sympy.Matrix([[0, 0, 0, -1],
-                                                [-1, 0, 0, 0]])
+                                              [-1, 0, 0, 0]])
 
 sigma_0 = sympy.eye(2)
 sigma_x = sympy.physics.matrices.msigma(1)

@@ -30,12 +30,12 @@ def get_phase(A):
 
     t = sympy.symbols('_t_internal_for_integration')
     subs = {
-        x: (1-t)*xi + t*xj,
-        y: (1-t)*yi + t*yj,
-        z: (1-t)*zi + t*zj,
+        x: (1 - t) * xi + t * xj,
+        y: (1 - t) * yi + t * yj,
+        z: (1 - t) * zi + t * zj,
     }
 
-    output = [xj-xi, yj-yi, zj-zi]
+    output = [xj - xi, yj - yi, zj - zi]
     for i, Ai in enumerate(A):
         if isinstance(Ai, sympy.Expr):
             Ai = Ai.subs(subs)
@@ -44,7 +44,7 @@ def get_phase(A):
 
         output[i] = output[i] * Ai
 
-    return (2*sympy.pi/phi_0) * sum(output)
+    return (2 * sympy.pi / phi_0) * sum(output)
 
 
 def apply(tb_hamiltonian, coords, *, A, signs=None):
