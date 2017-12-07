@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import json
 import kwant
@@ -5,12 +6,12 @@ import kwant
 import sympy
 
 
-# parameters varied in k.p Hamiltonian
+# Parameters varied in the k·p Hamiltonian
 varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
                      'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
 
-##### read cache
+# Read the cache
 def _load_cache():
     """Load cached models.
 
@@ -25,8 +26,8 @@ def _load_cache():
 _models_cache = _load_cache()
 
 
+# Module functions
 
-##### module functions
 def validate_coords(coords):
     """Validate coords in the same way it happens in kwant.continuum."""
     coords = list(coords)
@@ -40,16 +41,16 @@ def validate_coords(coords):
 
 def foreman(coords=None, components=('foreman',),
             bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
-    """Return 8x8 k.p Hamiltonian following Burt-Foreman symmetrization.
+    """Return 8x8 k·p Hamiltonian following Burt-Foreman symmetrization.
 
     Parameters
     ----------
     coords : sequence of strings
         Spatial dependents of parameters, e.g. ``coords='xyz'``
     components : sequence of strings
-        k.p components, e.g. ``components=['foreman', 'zeeman']``
+        k·p components, e.g. ``components=['foreman', 'zeeman']``
     bands : sequence of strings
-        k.p bands, e.g. ``bands=['gamma_6c']
+        k·p bands, e.g. ``bands=['gamma_6c']
 
     Returns
     -------
@@ -57,7 +58,7 @@ def foreman(coords=None, components=('foreman',),
     """
     if coords is not None:
         coords = validate_coords(coords)
-        str_coords ='({})'.format(", ".join(coords))
+        str_coords = '({})'.format(", ".join(coords))
         subs = {v: v + str_coords for v in varied_parameters}
     else:
         subs = {}
@@ -83,5 +84,8 @@ def foreman(coords=None, components=('foreman',),
         if b not in band_indices:
             raise ValueError("{} is not a proper band".format(b))
 
-    indices = sum([band_indices[band] for band in bands], [])
+    indices = []
+    for band in bands:
+        indices += band_indices[band]
+
     return hamiltonian[:, indices][indices, :]
