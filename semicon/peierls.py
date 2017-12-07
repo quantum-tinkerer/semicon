@@ -4,7 +4,6 @@ import kwant
 
 a = sympy.symbols('a')
 phi_0 = sympy.symbols('phi_0')
-
 ri = sympy.symbols('x_i y_i z_i')
 rj = sympy.symbols('x_j y_j z_j')
 
@@ -29,20 +28,16 @@ def get_phase(A):
     xj, yj, zj = rj
 
     t = sympy.symbols('_t_internal_for_integration')
-    subs = {
-        x: (1 - t) * xi + t * xj,
-        y: (1 - t) * yi + t * yj,
-        z: (1 - t) * zi + t * zj,
-    }
+
+    subs = {x: (1 - t) * xi + t * xj,
+            y: (1 - t) * yi + t * yj,
+            z: (1 - t) * zi + t * zj}
 
     output = [xj - xi, yj - yi, zj - zi]
     for i, Ai in enumerate(A):
         if isinstance(Ai, sympy.Expr):
             Ai = Ai.subs(subs)
-
-        Ai = sympy.integrate(Ai, (t, 0, 1))
-
-        output[i] = output[i] * Ai
+        output[i] *= sympy.integrate(Ai, (t, 0, 1))
 
     return (2 * sympy.pi / phi_0) * sum(output)
 
