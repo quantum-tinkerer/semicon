@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import imp
 import json
@@ -12,7 +13,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-##### building cache
+# Building cache
 def load_submodule(name):
     """Load submodule without loading rest of the package.
 
@@ -31,7 +32,7 @@ def load_submodule(name):
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semicon')
 cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
-csv_fnames =  os.path.join(BASE_DIR, 'databank', '*.csv')
+csv_fnames = os.path.join(BASE_DIR, 'databank', '*.csv')
 
 
 def build_cache():
@@ -48,7 +49,7 @@ def build_cache():
         json.dump(data, f)
 
 
-##### standard python build
+# Standard python build
 print("path", BASE_DIR)
 
 classifiers = """\
@@ -67,7 +68,7 @@ setup(
 
     author='R.J. Skolasinski',
     author_email='r.j.skolasinski@gmail.com',
-    description=("Python package for doing k.p simulation"),
+    description=("Python package for doing k·p simulation"),
     license="BSD",
 
     long_description=read("README.md"),
