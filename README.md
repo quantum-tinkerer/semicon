@@ -1,19 +1,19 @@
-# semicon - a k.p simulations made easy
+# semicon - k·p simulations made easy
 
 Note: this is work in progress, comments and ideas are more than welcomed!
 
-The goal of this package is to provide useful tools for doing k.p simulations.
+The goal of this package is to provide useful tools for doing k·p simulations.
 This tools consist of model definitions, material parameters, and helper
 functions to generate Kwant template systems.
 
 This package is suppose to remove an overhead and a boiler plate that appears
-when doing the k.p simulations. It is suppose to make things easier, therefore
+when doing the k·p simulations. It is suppose to make things easier, therefore
 userfriendly interface is a priority.
 
 
 # Models
 
-Models are based on the k.p Kane Hamiltonian, symmetrized following Burt-Foreman
+Models are based on the k·p Kane Hamiltonian, symmetrized following Burt-Foreman
 approach. User should be able to choose which components he wants to include
 (Zeeman term, strain, Dresselhaus SOI, etc.) and which bands (standard 8x8 and 14x14 versions).
 
