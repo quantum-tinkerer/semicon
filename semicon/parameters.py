@@ -1,32 +1,29 @@
-import pandas as pd
 import os
+from types import SimpleNamespace
 
+import numpy as np
+import pandas as pd
 import scipy.constants
 from scipy.constants import physical_constants
 from scipy.interpolate import interp1d
-from types import SimpleNamespace
-import numpy as np
 
 
-######  general constants and globals
-c = scipy.constants.c
-val_hbar = scipy.constants.hbar / scipy.constants.eV
-val_m_0 = scipy.constants.m_e / scipy.constants.e / (1e9)**2
-val_mu_B = physical_constants['Bohr magneton in eV/T'][0]
-val_phi_0 = 2 * physical_constants['mag. flux quantum'][0] * (1e9)**2
-taa = val_hbar**2 / 2 / val_m_0
-
+# General constants and globals
 constants = {
-    'm_0': val_m_0,
-    'phi_0': val_phi_0,
-    'mu_B': val_mu_B,
-    'hbar': val_hbar
+    'm_0': scipy.constants.m_e / scipy.constants.e / (1e9)**2,
+    'phi_0': 2 * physical_constants['mag. flux quantum'][0] * (1e9)**2,
+    'mu_B': physical_constants['Bohr magneton in eV/T'][0],
+    'hbar': scipy.constants.hbar / scipy.constants.eV,
 }
 
-###### loading parameters from databank
+taa = constants['hbar']**2 / 2 / constants['m_0']
+
+# Load the parameters from the databank
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 _banks_names = ['winkler', 'lawaetz']
+
+
 def load_params(bankname):
     """Load material parameters from specified databank.
 
@@ -40,10 +37,10 @@ def load_params(bankname):
     return pd.read_csv(fpath, index_col=0)
 
 
-###### renormalization of parameters
+# Renormalization of parameters
 def renormalize_parameters(dict_pars, new_gamma_0=None,
                            bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
-    """Renormalize parameters"""
+    """Renormalize parameters."""
 
     output = {}
 
@@ -56,7 +53,7 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
 
     # gamma_6c parameters
     if 'gamma_6c' in bands:
-        # do special steps if user want to renormalize gamma_0
+        # take special steps if the user want to renormalize gamma_0
         if new_gamma_0 is not None:
             if ('gamma_8v' not in bands) or ('gamma_7v' not in bands):
                 raise ValueError('Cannot set different "gamma_0" '
@@ -88,7 +85,7 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
         if 'gamma_7v' in bands:
             output['g_c'] -= (2/3) * (Ep / (p.E_0 + p.Delta_0))
 
-    # now the gamma_7v and gamma_8v parameters
+    # now also for the gamma_7v and gamma_8v parameters
     if ('gamma_8v' in bands) or ('gamma_7v' in bands):
         output['gamma_1'] = p.gamma_1
         output['gamma_2'] = p.gamma_2
@@ -105,7 +102,7 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
     return output
 
 
-###### system specific parameter functions
+# System specific parameter functions
 def bulk(bank, material, new_gamma_0=None, new_P=None, valence_band_offset=0.0,
          bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
          extra_constants=None):
@@ -153,26 +150,25 @@ def two_deg(parameters, widths, grid_spacing, extra_constants=None):
     """
 
     def get_walls(a, Ws):
-        walls = np.array([sum(Ws[:(i+1)]) for i in range(len(Ws)-1)]) - 0.5 * a
+        walls = np.cumsum(Ws)[:-1] - 0.5 * a
         walls = np.insert(walls, 0, -a)
         walls = np.append(walls, sum(Ws))
         return walls
 
     def interp_sn_params(a, walls, values, parameter_name):
-        xs = [x+d for x in walls[1:-1] for d in [-a/2, +a/2]]
+        xs = [x + d for x in walls[1:-1] for d in [-a/2, +a/2]]
         xs = [walls[0]] + xs + [walls[-1]]
         ys = [p[parameter_name] for p in values for i in range(2)]
         return interp1d(xs, ys, fill_value='extrapolate')
 
-    # varied parameters should probably be a union of available k.p parameters,
+    # Varied parameters should probably be a union of available k·p parameters
     varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
                          'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
 
     walls = get_walls(grid_spacing, widths)
 
-    output = {}
-    for par_name in varied_parameters:
-        output[par_name] = interp_sn_params(grid_spacing, walls, parameters, par_name)
+    output = {par: interp_sn_params(grid_spacing, walls, parameters, par)
+              for par in varied_parameters}
 
     if extra_constants is not None:
         output.update(extra_constants)
@@ -180,9 +176,9 @@ def two_deg(parameters, widths, grid_spacing, extra_constants=None):
     return output, walls
 
 
-###### helper plotting function
+# Plotting helper function
 def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
-    """Plot band edges """
+    """Plot band edges."""
     import matplotlib.pyplot as plt
     y1 = two_deg_params['E_v'](xpos)
     y2 = y1 + two_deg_params['E_0'](xpos)
@@ -192,7 +188,8 @@ def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
     plt.plot(xpos, y2, '-o')
 
     if walls is not None:
-        walls_y = [min([np.min(y1), np.min(y2)]), max([np.max(y1), np.max(y2)])]
+        walls_y = [min([np.min(y1), np.min(y2)]),
+                   max([np.max(y1), np.max(y2)])]
         for w in walls:
             plt.plot([w, w], walls_y, 'k--')
 
