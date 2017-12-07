@@ -108,14 +108,22 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
 
 
 ###### system specific parameter functions
-def bulk(bank, material, new_gamma_0=None, valence_band_offset=0.0,
+def bulk(bank, material, new_gamma_0=None, new_P=None, valence_band_offset=0.0,
          bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
          extra_constants=None):
     """Get bulk parameters of a specified material."""
+
+    if (new_gamma_0 is not None) and (new_P is not None):
+        raise ValueError("'new_gamma_0' and 'new_P' cannot be used "
+                         "simultaneously.")
+
     df_pars = load_params(bank)
     dict_pars = df_pars.loc[material].to_dict()
     dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
     dict_pars['E_v'] = valence_band_offset
+
+    if new_P is not None:
+        dict_pars['P'] = new_P
 
     output = renormalize_parameters(dict_pars, new_gamma_0, bands)
 
@@ -125,15 +133,25 @@ def bulk(bank, material, new_gamma_0=None, valence_band_offset=0.0,
     return output
 
 
-def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,
-            new_gamma_0=None, bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
-            extra_constants=None):
-    """Get parameter functions for a specified 2D system.
+def two_deg(parameters, widths, grid_spacing, extra_constants=None):
+    """Get parameter functions for a specified 2D heterostructure.
 
+    Parameters
+    ----------
+    parameters : sequence of dicts
+        Material parameters for each material in the heterostructure.
+        Only k.p parameters from each dictionary will be used.
+    widths : sequence of numbers
+        Width of each material in the heterostructure.
+    grid_spacing : int, float
+        Grid spacing that is used for discretization.
+    extra_constants : dict
+        Pass extra constants here.
 
-    To do:
-    - way provide parameters, not only data "bank" name,
-    - specify which parameters should be varied (default all defined parameters)
+    Returns
+    -------
+    parameters : dictionary of parameter functions
+    walls : array of floats
     """
 
     def get_walls(a, Ws):
@@ -151,16 +169,6 @@ def two_deg(bank, materials, widths, valence_band_offsets, grid_spacing,
     # varied parameters should probably be a union of available k.p parameters,
     varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
                          'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
-
-    df_pars = load_params(bank)
-
-    parameters = []
-    for material, offset in zip(materials, valence_band_offsets):
-        dict_pars = df_pars.loc[material].to_dict()
-        dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
-        dict_pars['E_v'] = offset
-        dict_pars = renormalize_parameters(dict_pars, new_gamma_0, bands)
-        parameters.append(dict_pars)
 
     walls = get_walls(grid_spacing, widths)
 
