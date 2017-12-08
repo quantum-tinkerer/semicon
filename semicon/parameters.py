@@ -7,8 +7,6 @@ from scipy.interpolate import interp1d
 from types import SimpleNamespace
 import numpy as np
 
-import matplotlib.pyplot as plt
-
 
 ######  general constants and globals
 c = scipy.constants.c
@@ -185,6 +183,7 @@ def two_deg(parameters, widths, grid_spacing, extra_constants=None):
 ###### helper plotting function
 def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
     """Plot band edges """
+    import matplotlib.pyplot as plt
     y1 = two_deg_params['E_v'](xpos)
     y2 = y1 + two_deg_params['E_0'](xpos)
 
