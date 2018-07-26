@@ -66,18 +66,20 @@ pip install git+https://gitlab.kwant-project.org/r-j-skolasinski/semicon.git
 
 # Tips about developing inside docker container
 
-One can use ``kwant-devenv`` for a development of this project.
+One can easily use a [rafalskolasinski/science](https://github.com/RafalSkolasinski/science-docker) 
+Docker container for a development of this project.
 Assuming that ``semicon`` folder is ``~/projects/semicon`` do:
 ```
-docker pull rafalskolasinski/kwant-devenv
+docker pull rafalskolasinski/science
 docker run -d -p 8888:8888 --name semicon \
-    -v ~/projects/semicon:/src -v ~/projects/semicon/notebooks:/notebooks \
-    rafalskolasinski/kwant-devenv
+    -v ~/work/semicon:/src -v ~/work/semicon/notebooks:/home/jovyan/work \
+    rafalskolasinski/science
 ```
 
-This will mount source code in ``/src`` and project notebooks in ``/notebooks``
+This will mount source code in ``/src`` and project notebooks in ``~/work``
 inside the containier. It will also start ``jupyter notebook`` server running
-at ``localhost:8888``.
+at ``localhost:8888``. You will need to read jupyter's server token with 
+``docker logs semicon`` to access the server.
 
 You can now use ``docker exec semicon build`` and ``docker exec semicon test``
 to build the package or run the tests respectively.
@@ -90,10 +92,4 @@ docker exec -it semicon bash
 Nicely formatted output of tests (colors):
 ```
 docker exec -it semicon test -v
-```
-
-To get matplotlib2 one can
-```
-docker exec -it semicon apt-get remove python3-matplotlib
-docker exec -it semicon pip3 install matplotlib==2*
 ```
