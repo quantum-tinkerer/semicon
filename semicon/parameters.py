@@ -29,8 +29,8 @@ _parameters_names = [
 ]
 
 
-def from_yaml(yml_str):
-    pars = {k: v['parameters'] for k, v in yaml.load(yml_str).items()}
+def load_as_df(bankname):
+    pars = load_params(bankname)
     df = pd.DataFrame(pars).T
     return df[_parameters_names]
 
@@ -45,8 +45,8 @@ def load_params(bankname):
         raise ValueError(msg.format(_banks_names))
     fpath = os.path.join(BASE_DIR, 'databank', 'bank_' + bankname + '.yml')
     with open(fpath, 'r') as f:
-        df = from_yaml(f.read())
-    return df
+        pars = {k: v['parameters'] for k, v in yaml.load(f.read()).items()}
+    return pars
 
 
 # Renormalization of parameters
@@ -115,17 +115,47 @@ def renormalize_parameters(dict_pars, new_gamma_0=None,
 
 
 # System specific parameter functions
-def bulk(bank, material, new_gamma_0=None, new_P=None, valence_band_offset=0.0,
+def bulk(bank, material=None, new_gamma_0=None, new_P=None, valence_band_offset=0.0,
          bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
          extra_constants=None):
-    """Get bulk parameters of a specified material."""
+    """Get bulk bank of a specified material.
+
+    Parameters
+    ----------
+    bank : str, dict, or dict of dicts
+        This can be either name of the predefined databank, dictionary of
+        parameters, or dictionary of parameters for different materials
+    name : str
+        Must be provided if bank is a string or dict of dicts
+    new_gamma_0 : float (optional)
+        Parameter gamma_0 can be renormalized in order to avoid spurious
+        solutions. Mutually exclusive with "new_P".
+    new_P : float (optional)
+        Parameter gamma_0 can be renormalized in order to avoid spurious
+        solutions. Mutually exclusive with "new_gamma_0".
+    valence_band_offset : float (optional)
+        Adjusts offset of valence band.
+    bands : sequence of strings
+        Bands present in the model.
+    extra_constants : dict (optional)
+        If not None return value will be updated by this dict.
+
+    Returns
+    -------
+    bulk parameters : dict
+    """
 
     if (new_gamma_0 is not None) and (new_P is not None):
         raise ValueError("'new_gamma_0' and 'new_P' cannot be used "
                          "simultaneously.")
 
-    df_pars = load_params(bank)
-    dict_pars = df_pars.loc[material].to_dict()
+    if isinstance(bank, str):
+        dict_pars = load_params(bank)[material]
+    elif material is not None:
+        dict_pars = bank[material]
+    else:
+        dict_pars = bank
+
     dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
     dict_pars['E_v'] = valence_band_offset
 
