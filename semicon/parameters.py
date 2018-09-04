@@ -1,6 +1,7 @@
 import os
 from types import SimpleNamespace
 
+import yaml
 import numpy as np
 import pandas as pd
 import scipy.constants
@@ -23,6 +24,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 _banks_names = ['winkler', 'lawaetz']
 
+_parameters_names = [
+    'E_0', 'Delta_0', 'P', 'm_c', 'gamma_1', 'gamma_2', 'gamma_3',
+    'g_c',  'kappa', 'q'
+]
+
+
+def from_yaml(yml_str):
+    pars = {k: v['parameters'] for k, v in yaml.load(yml_str).items()}
+    df = pd.DataFrame(pars).T
+    return df[_parameters_names]
+
 
 def load_params(bankname):
     """Load material parameters from specified databank.
@@ -32,9 +44,10 @@ def load_params(bankname):
     if bankname not in _banks_names:
         msg = "Unkown bankname. Possible options are {}"
         raise ValueError(msg.format(_banks_names))
-    fname = 'bank_' + bankname + '.csv'
-    fpath = os.path.join(BASE_DIR, 'databank', fname)
-    return pd.read_csv(fpath, index_col=0)
+    fpath = os.path.join(BASE_DIR, 'databank', 'bank_' + bankname + '.yml')
+    with open(fpath, 'r') as f:
+        df = from_yaml(f.read())
+    return df
 
 
 # Renormalization of parameters
