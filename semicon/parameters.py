@@ -4,17 +4,16 @@ from types import SimpleNamespace
 import yaml
 import numpy as np
 import pandas as pd
-import scipy.constants
-from scipy.constants import physical_constants
+from scipy.constants import physical_constants as phys_const
 from scipy.interpolate import interp1d
 
 
 # General constants and globals
 constants = {
-    'm_0': scipy.constants.m_e / scipy.constants.e / (1e9)**2,
-    'phi_0': 2 * physical_constants['mag. flux quantum'][0] * (1e9)**2,
-    'mu_B': physical_constants['Bohr magneton in eV/T'][0],
-    'hbar': scipy.constants.hbar / scipy.constants.eV,
+    'm_0': phys_const['electron mass energy equivalent in MeV'][0] * 1e6,
+    'phi_0': 2 * phys_const['mag. flux quantum'][0] * (1e9)**2,
+    'mu_B': phys_const['Bohr magneton in eV/T'][0],
+    'hbar': phys_const['Planck constant over 2 pi times c in MeV fm'][0]
 }
 
 taa = constants['hbar']**2 / 2 / constants['m_0']
