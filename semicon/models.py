@@ -5,6 +5,8 @@ import kwant
 
 import sympy
 
+from .kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
+
 
 # Parameters varied in the k·p Hamiltonian
 varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
@@ -37,6 +39,23 @@ def validate_coords(coords):
         raise ValueError("The argument 'coords' may only contain "
                          "'x', 'y', or 'z'.")
     return coords
+
+
+def _band_indices(bands):
+    band_indices = {
+        'gamma_6c': [0, 1],
+        'gamma_8v': [2, 3, 4, 5],
+        'gamma_7v': [6, 7]
+    }
+
+    for b in bands:
+        if b not in band_indices:
+            raise ValueError("{} is not a proper band".format(b))
+
+    indices = []
+    for band in bands:
+        indices += band_indices[band]
+    return indices
 
 
 def foreman(coords=None, components=('foreman',),
@@ -74,18 +93,15 @@ def foreman(coords=None, components=('foreman',),
     if tuple(bands) == ('gamma_6c', 'gamma_8v', 'gamma_7v'):
         return hamiltonian
 
-    band_indices = {
-        'gamma_6c': [0, 1],
-        'gamma_8v': [2, 3, 4, 5],
-        'gamma_7v': [6, 7]
-    }
-
-    for b in bands:
-        if b not in band_indices:
-            raise ValueError("{} is not a proper band".format(b))
-
-    indices = []
-    for band in bands:
-        indices += band_indices[band]
-
+    indices = _band_indices(bands)
     return hamiltonian[:, indices][indices, :]
+
+
+def spin_operators(bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
+    Sx = sympy.BlockDiagMatrix(sigma_x / 2, Jx, sigma_x / 2).as_explicit()
+    Sy = sympy.BlockDiagMatrix(sigma_y / 2, Jy, sigma_y / 2).as_explicit()
+    Sz = sympy.BlockDiagMatrix(sigma_z / 2, Jz, sigma_z / 2).as_explicit()
+
+    indices = _band_indices(bands)
+    output = [S[:, indices][indices, :] for S in [Sx, Sy, Sz]]
+    return output
