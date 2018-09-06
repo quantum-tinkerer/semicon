@@ -15,21 +15,6 @@ def read(fname):
 
 
 # Building cache
-def load_submodule(name):
-    """Load submodule without loading rest of the package.
-
-    With this I can load explicit Hamiltonians omitting
-    dependency needed by the rest of the package.
-
-    credit goes to HYRY: stackoverflow.com/questions/21298833
-    """
-    names = name.split(".")
-    path = None
-    for name in names:
-        f, path, info = imp.find_module(name, path)
-        path = [path]
-    return imp.load_module(name, f, path[0], info)
-
 
 BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semicon')
 cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
@@ -37,10 +22,8 @@ csv_fnames = os.path.join(BASE_DIR, 'databank', '*.csv')
 
 
 def build_cache():
-    explicit_foreman = load_submodule('semicon.kp_models.explicit_foreman')
-    explicit_zeeman = load_submodule('semicon.kp_models.explicit_zeeman')
-
     print("building models' cache")
+    from semicon.kp_models import explicit_foreman, explicit_zeeman
 
     data = {
         'foreman': str(explicit_foreman.foreman),

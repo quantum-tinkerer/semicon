@@ -20,21 +20,7 @@ import sympy
 import sympy.physics
 from sympy.physics.quantum import TensorProduct as kr
 
-
-# Momenta
-kx, ky, kz = sympy.symbols('k_x k_y k_z', commutative=False)
-
-# Symbols
-Ec, Ac, P, M, L = sympy.symbols('E_c A_c P M L', commutative=False)
-N, Np, Nm = sympy.symbols('N N_+ N_-', commutative=False)
-
-# Gamma parameters
-E0, Ev, g0 = sympy.symbols('E_0 E_v gamma_0', commutative=False)
-g1, g2, g3 = sympy.symbols("gamma_1 gamma_2 gamma_3", commutative=False)
-Delta, kappa = sympy.symbols('Delta_0 kappa', commutative=False)
-P, mu, gbar = sympy.symbols('P mu gammabar', commutative=False)
-hbar, m0 = sympy.symbols("hbar, m_0")
-
+from .symbols import *
 
 # Helper function definitions
 def valence_term(i, j):
