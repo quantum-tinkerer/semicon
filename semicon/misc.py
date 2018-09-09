@@ -13,21 +13,28 @@ from scipy.spatial.transform import Rotation
 import sympy
 import kwant
 
-from .kp_models.symbols import momenta_symbols, magnetic_symbols
+from .kp_models import symbols
+# from .kp_models.symbols import momentum_symbols, position_symbols, magnetic_symbols
 
 
-def round_sympy(expr, decimals=12):
-    """Round numerical coefficients in SymPy expression.
+def prettify(expr, decimals=None, nsimplify=False):
+    """Prettify SymPy expression.
 
-    note: entries like "sympy.sqrt(3)" will be replaced
-    with their numerical values.
+    1. cast to monomials: symbols -> numerical factor
+    2. if decimals is not None: use np.round on numerical factor
+    3. if nsimplify is True: use sympy.nsimplify
     """
     terms = [(k, v) for k, v in monomials(expr).items()]
+    vnsimplify = np.vectorize(sympy.nsimplify, otypes=[object])
 
     output = []
     for k, v in terms:
         v = np.array(v.tolist(), complex)
-        output.append(k * sympy.Matrix(np.round(v, decimals)))
+        if decimals is not None:
+            v = np.round(v, decimals)
+        if nsimplify:
+            v = vnsimplify(v)
+        output.append(k * sympy.Matrix(v))
     return sympy.MatAdd(*output).as_explicit()
 
 
@@ -41,17 +48,23 @@ def sympy_to_numpy(arr, dtype=complex):
 def rotate_symbols(expr, R):
     rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
 
-    subs1 = rotation_subs(R, sympy.Matrix(momenta_symbols))
-    subs2 = rotation_subs(R, sympy.Matrix(magnetic_symbols))
-    subs = {**subs1, **subs2}
+    subs1 = rotation_subs(R, sympy.Matrix(symbols.momentum_symbols))
+    subs2 = rotation_subs(R, sympy.Matrix(symbols.position_symbols))
+    subs3 = rotation_subs(R, sympy.Matrix(symbols.magnetic_symbols))
+    subs = {**subs1, **subs2, **subs3}
+    # "simultaneous" flag is very important here
+    # note that SymPy takes it as **kwargs and there
+    # is no validation for typos!!!
     return expr.subs(subs, simultaneous=True).expand()
 
 
 def basis_rotation(R, spin_operators):
+    R = sympy_to_numpy(R, dtype=float)
     n = Rotation.from_dcm(R).as_rotvec()
     spin_operators = [sympy_to_numpy(s) for s in spin_operators]
     ns = np.sum([ni * si for (ni, si) in zip(n, spin_operators)], axis=0)
     return la.expm(1j * ns)
+
 
 
 # Function defined in this section come from "kwant.continuum" module

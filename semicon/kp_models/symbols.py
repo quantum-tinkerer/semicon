@@ -1,9 +1,10 @@
 import sympy
 
 
-# Momenta
-kx, ky, kz = sympy.symbols('k_x k_y k_z', commutative=False)
-momenta_symbols = kx, ky, kz
+# Momenta and positions
+momentum_symbols = kx, ky, kz = sympy.symbols('k_x k_y k_z', commutative=False)
+position_symbols = sympy.symbols('x y z', commutative=False)
+
 
 # Symbols
 Ec, Ac, P, M, L = sympy.symbols('E_c A_c P M L', commutative=False)
