@@ -5,7 +5,10 @@ import kwant
 
 import sympy
 
-from .kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
+import numpy as np
+
+from . import misc
+from .kp_models import symbols
 
 
 # Parameters varied in the k·p Hamiltonian
@@ -98,10 +101,46 @@ def foreman(coords=None, components=('foreman',),
 
 
 def spin_operators(bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
-    Sx = sympy.BlockDiagMatrix(sigma_x / 2, Jx, sigma_x / 2).as_explicit()
-    Sy = sympy.BlockDiagMatrix(sigma_y / 2, Jy, sigma_y / 2).as_explicit()
-    Sz = sympy.BlockDiagMatrix(sigma_z / 2, Jz, sigma_z / 2).as_explicit()
+
+    Sx = sympy.BlockDiagMatrix(
+        symbols.sigma_x / 2, symbols.Jx, symbols.sigma_x / 2
+    ).as_explicit()
+
+    Sy = sympy.BlockDiagMatrix(
+        symbols.sigma_y / 2, symbols.Jy, symbols.sigma_y / 2
+    ).as_explicit()
+
+    Sz = sympy.BlockDiagMatrix(
+        symbols.sigma_z / 2, symbols.Jz, symbols.sigma_z / 2
+    ).as_explicit()
 
     indices = _band_indices(bands)
     output = [S[:, indices][indices, :] for S in [Sx, Sy, Sz]]
     return output
+
+
+def _validate_rotation_matrix(R):
+    if isinstance(R, np.ndarray):
+        det = la.det(R)
+    elif isinstance(R, sympy.matrices.MatrixBase):
+        det = R.det()
+    else:
+        raise ValueError("rotation matrix should be defined as np.array or sympy.Matrix")
+
+    if not np.allclose(float(det), 1):
+        raise ValueError("Determinant of rotation matrix must be 0.")
+
+
+def rotate(model, R, spin_operators=None):
+
+    # Check if rotation matrix is properly defined
+    _validate_rotation_matrix(R)
+
+    # Proceed with rotation procedure
+    model = misc.rotate_symbols(model, R)
+
+    if spin_operators is not None:
+        U = misc.basis_rotation(R, spin_operators)
+        model = (U @ model @ U.transpose().conjugate())
+
+    return model.expand()

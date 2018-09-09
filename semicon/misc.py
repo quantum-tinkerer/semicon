@@ -14,7 +14,19 @@ import sympy
 import kwant
 
 from .kp_models import symbols
-# from .kp_models.symbols import momentum_symbols, position_symbols, magnetic_symbols
+
+
+def _prettify_term(expr, decimals=None, nsimplify=False):
+    terms = [(k, v) for k, v in monomials(expr).items()]
+
+    output = []
+    for k, v in terms:
+        if decimals is not None:
+            v = np.round(complex(v), decimals)
+        if nsimplify:
+            v = sympy.nsimplify(sympy.sympify(v))
+        output.append(k * v)
+    return sympy.Add(*output)
 
 
 def prettify(expr, decimals=None, nsimplify=False):
@@ -24,18 +36,14 @@ def prettify(expr, decimals=None, nsimplify=False):
     2. if decimals is not None: use np.round on numerical factor
     3. if nsimplify is True: use sympy.nsimplify
     """
-    terms = [(k, v) for k, v in monomials(expr).items()]
-    vnsimplify = np.vectorize(sympy.nsimplify, otypes=[object])
+    if not isinstance(expr, sympy.matrices.MatrixBase):
+        return _prettify_term(expr, decimals, nsimplify)
 
-    output = []
-    for k, v in terms:
-        v = np.array(v.tolist(), complex)
-        if decimals is not None:
-            v = np.round(v, decimals)
-        if nsimplify:
-            v = vnsimplify(v)
-        output.append(k * sympy.Matrix(v))
-    return sympy.MatAdd(*output).as_explicit()
+    output = sympy.zeros(*expr.shape)
+    for (i, j), expression in np.ndenumerate(expr):
+        output[i, j] = _prettify_term(expression, decimals, nsimplify)
+
+    return output
 
 
 def sympy_to_numpy(arr, dtype=complex):
