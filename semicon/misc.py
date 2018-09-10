@@ -16,32 +16,46 @@ import kwant
 from .kp_models import symbols
 
 
-def _prettify_term(expr, decimals=None, nsimplify=False):
+def _prettify_term(expr, decimals=None, zero_atol=None, nsimplify=False):
     terms = [(k, v) for k, v in monomials(expr).items()]
 
     output = []
     for k, v in terms:
+        v = complex(v)
+
+        # numerical rounding to given precision
         if decimals is not None:
-            v = np.round(complex(v), decimals)
+            v = np.round(v, decimals)
+
+        # check if v is zero up to desired atol
+        if zero_atol is not None:
+            v_real = 0 if np.isclose(v.real, 0, atol=zero_atol) else v.real
+            v_imag = 0 if np.isclose(v.imag, 0, atol=zero_atol) else v.imag
+            v = v_real + 1j * v_imag
+
+        # sympy nsimplify (subs sqrt(3) and similar in place of floats)
         if nsimplify:
             v = sympy.nsimplify(sympy.sympify(v))
+
         output.append(k * v)
     return sympy.Add(*output)
 
 
-def prettify(expr, decimals=None, nsimplify=False):
+def prettify(expression, decimals=None, zero_atol=None, nsimplify=False):
     """Prettify SymPy expression.
 
     1. cast to monomials: symbols -> numerical factor
     2. if decimals is not None: use np.round on numerical factor
-    3. if nsimplify is True: use sympy.nsimplify
+    3. if zero_atol is not None: check np.isclose(x, 0, atol=zero_atol)
+       to check if number is zero
+    4. if nsimplify is True: use sympy.nsimplify
     """
-    if not isinstance(expr, sympy.matrices.MatrixBase):
-        return _prettify_term(expr, decimals, nsimplify)
+    if not isinstance(expression, sympy.matrices.MatrixBase):
+        return _prettify_term(expression, decimals, zero_atol, nsimplify)
 
-    output = sympy.zeros(*expr.shape)
-    for (i, j), expression in np.ndenumerate(expr):
-        output[i, j] = _prettify_term(expression, decimals, nsimplify)
+    output = sympy.zeros(*expression.shape)
+    for (i, j), expr in np.ndenumerate(expression):
+        output[i, j] = _prettify_term(expr, decimals, zero_atol, nsimplify)
 
     return output
 
