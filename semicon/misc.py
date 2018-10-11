@@ -82,6 +82,8 @@ def sympy_to_numpy(arr, dtype=complex):
 
 
 def _validate_rotation_matrix(R):
+    if not R.shape[0] == R.shape[1] == 3:
+        raise ValueError("Rotation matrix is expected to be 3x3 unitary Matrix")
     if isinstance(R, np.ndarray):
         det = la.det(R)
     elif isinstance(R, sympy.matrices.MatrixBase):
@@ -91,7 +93,7 @@ def _validate_rotation_matrix(R):
                          "sympy.Matrix")
 
     if not np.allclose(float(det), 1):
-        raise ValueError("Determinant of rotation matrix must be 0.")
+        raise ValueError("Determinant of rotation matrix must be 1.")
 
 
 def _basis_rotation(R, spin_operators):

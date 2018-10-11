@@ -41,7 +41,7 @@ InAs:
     q: 0.04
 
 HgTe:
-  name: Mercury Teluride
+  name: Mercury Telluride
   parameters:
     E_0: -0.303
     Delta_0: 1.0
@@ -55,7 +55,7 @@ HgTe:
     q: 0.06
 
 CdTe:
-  name: Cadium Teluride
+  name: Cadmium Telluride
   parameters:
     E_0: 1.6
     Delta_0: 0.91
