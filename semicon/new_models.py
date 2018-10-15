@@ -136,29 +136,40 @@ class BandModel(Model):
 
 from .models import foreman
 
-class Zincblende(BandModel):
-    """Model for Zincblende crystals."""
+class ZincBlende(BandModel):
+    """Model for ZincBlende crystals."""
 
     _allowed_components = ('foreman', 'zeeman')
     _allowed_bands = {'gamma_6c': 1/2, 'gamma_8v': 3/2, 'gamma_7v': 1/2}
 
     def __init__(self, bands, components, parameter_dependence=None,
-                 default_databank='lawaetz'):
+                 default_databank=None):
         self._parameter_dependence = parameter_dependence
-        self.default_databank = default_databank
+
+        if isinstance(default_databank, str):
+            self.default_databank = parameters.DataBank(default_databank)
+        else:
+            self.default_databank = default_databank
+
 
         BandModel.__init__(self, bands=bands, components=components)
 
     def _build_hamiltonian(self):
         return foreman(self._parameter_dependence, self.components, self.bands)
 
-    def parameters(self, material, databank_name=None):
-        if databank_name is None:
-            databank_name = self.default_databank
+    def parameters(self, material, databank=None, valence_band_offset=0):
+        if databank is None:
+            if self.default_databank is not None:
+                databank = self.default_databank
+            else:
+                raise ValueError("No databank provided.")
 
-        return parameters.ZincBlendeParameters(
+        output = parameters.ZincBlendeParameters(
+            name=material,
             bands=self.bands,
-            components=self.components,
-            material=material,
-            databank_name=databank_name
+            parameters=databank[material],
+            valence_band_offset=valence_band_offset,
         )
+
+        output.update(parameters.constants)
+        return output
