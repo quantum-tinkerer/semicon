@@ -8,7 +8,7 @@ import sympy
 import numpy as np
 
 from . import misc
-from .kp_models import symbols
+from . import symbols
 
 
 # Parameters varied in the k·p Hamiltonian
@@ -23,7 +23,7 @@ def _load_cache():
     File semicon/kp_models/cache.json should be created on package build.
     """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
+    fname = os.path.join(BASE_DIR, 'model_cache.json')
     with open(fname) as f:
         models_cache = json.load(f)
     return models_cache

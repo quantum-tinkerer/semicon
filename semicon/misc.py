@@ -13,7 +13,7 @@ from scipy.spatial.transform import Rotation
 import sympy
 import kwant
 
-from .kp_models import symbols
+from . import symbols
 
 
 def _prettify_term(expr, decimals=None, zero_atol=None, nsimplify=False):

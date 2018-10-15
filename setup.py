@@ -17,7 +17,7 @@ def read(fname):
 # Building cache
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
+cache_fname = os.path.join(BASE_DIR, 'semicon', 'model_cache.json')
 csv_fnames = os.path.join(BASE_DIR, 'semicon', 'databank', '*.csv')
 
 
