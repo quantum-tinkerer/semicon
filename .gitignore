@@ -103,5 +103,5 @@ ENV/
 .mypy_cache/
 
 # this project
-semicon/kp_models/cache.json
+kp_models/cache.json
 .pytest_cache

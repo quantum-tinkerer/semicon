@@ -16,14 +16,14 @@ def read(fname):
 
 # Building cache
 
-BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semicon')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cache_fname = os.path.join(BASE_DIR, 'kp_models', 'cache.json')
-csv_fnames = os.path.join(BASE_DIR, 'databank', '*.csv')
+csv_fnames = os.path.join(BASE_DIR, 'semicon', 'databank', '*.csv')
 
 
 def build_cache():
     print("building models' cache")
-    from semicon.kp_models import explicit_foreman, explicit_zeeman
+    from kp_models import explicit_foreman, explicit_zeeman
 
     data = {
         'foreman': str(explicit_foreman.foreman),
