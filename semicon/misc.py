@@ -4,7 +4,6 @@
 
 import numpy as np
 import scipy.linalg as la
-import xarray as xr
 from itertools import product
 from collections import Mapping, defaultdict
 
