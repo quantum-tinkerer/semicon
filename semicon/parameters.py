@@ -1,11 +1,17 @@
+import abc
+import copy
 import os
-from types import SimpleNamespace
-
+import re
 import yaml
+
+import inspect
+from collections import UserDict
+
 import numpy as np
 import pandas as pd
 from scipy.constants import physical_constants as phys_const
-from scipy.interpolate import interp1d
+
+import kwant
 
 
 # General constants and globals
@@ -18,224 +24,186 @@ constants = {
 
 taa = constants['hbar']**2 / 2 / constants['m_0']
 
-# Load the parameters from the databank
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-_banks_names = ['winkler', 'lawaetz']
-
-_parameters_names = [
-    'E_0', 'Delta_0', 'P', 'm_c', 'gamma_1', 'gamma_2', 'gamma_3',
-    'g_c',  'kappa', 'q'
-]
+DATABANK_DIR = os.path.join(BASE_DIR, 'databank')
 
 
-def load_as_df(bankname):
-    pars = load_params(bankname)
-    df = pd.DataFrame(pars).T
-    return df[_parameters_names]
+# Find available databanks
+def _find_available_databanks():
+    names = []
+    for fname in os.listdir(DATABANK_DIR):
+        match = re.match("^bank_(.+)\.yml$", fname)
+        if match is not None:
+            names.append(match.group(1))
+    return names
 
 
-def load_params(bankname):
-    """Load material parameters from specified databank.
-
-    output: pandas dataframe
-    """
-    if bankname not in _banks_names:
-        msg = "Unkown bankname. Possible options are {}"
-        raise ValueError(msg.format(_banks_names))
-    fpath = os.path.join(BASE_DIR, 'databank', 'bank_' + bankname + '.yml')
-    with open(fpath, 'r') as f:
-        pars = {k: v['parameters'] for k, v in yaml.load(f.read()).items()}
-    return pars
+_banks_names = _find_available_databanks()
 
 
-# Renormalization of parameters
-def renormalize_parameters(dict_pars, new_gamma_0=None,
-                           bands=('gamma_6c', 'gamma_8v', 'gamma_7v')):
-    """Renormalize parameters."""
-
-    output = {}
-
-    p = SimpleNamespace(**dict_pars)
-    Ep = p.P**2 / taa
-    output['P'] = p.P
-    output['E_v'] = p.E_v
-    output['E_0'] = p.E_0
-    output['Delta_0'] = p.Delta_0
-
-    # gamma_6c parameters
-    if 'gamma_6c' in bands:
-        # take special steps if the user want to renormalize gamma_0
-        if new_gamma_0 is not None:
-            if ('gamma_8v' not in bands) or ('gamma_7v' not in bands):
-                raise ValueError('Cannot set different "gamma_0" '
-                                 'without at least one hole band.')
-            scale = 0
-            if 'gamma_8v' in bands:
-                scale += (2/3) / p.E_0
-
-            if 'gamma_7v' in bands:
-                scale += (1/3) / (p.E_0 + p.Delta_0)
-
-            Ep = (p.gamma_0 - new_gamma_0) / scale
-            output['P'] = np.sqrt(taa * Ep)
-            output['gamma_0'] = new_gamma_0
-
+class DataBank(UserDict):
+    """Data bank of effective parameters."""
+    def __init__(self, name):
+        # If "name" is one of predefined databank then load it, otherwise
+        # check if it is absolute path to existin datafile.
+        if name in _banks_names:
+            fpath = os.path.join(DATABANK_DIR, 'bank_' + name + '.yml')
+        elif os.path.isabs(name):
+            fpath = name
         else:
-            output['gamma_0'] = p.gamma_0
-            if 'gamma_8v' in bands:
-                output['gamma_0'] -= (2/3) * (Ep / p.E_0)
+            msg = ("Wrong file name. Please provide a valid path to a file "
+                   "or choose from the following predefined banks: {}.")
+            raise ValueError(msg.format(_banks_names))
 
-            if 'gamma_7v' in bands:
-                output['gamma_0'] -= (1/3) * (Ep / (p.E_0 + p.Delta_0))
+        self.name = name
 
-        # g-factor
-        output['g_c'] = p.g_c
-        if 'gamma_8v' in bands:
-            output['g_c'] += (2/3) * (Ep / p.E_0)
+        # Initialize base class
+        UserDict.__init__(self)
 
-        if 'gamma_7v' in bands:
-            output['g_c'] -= (2/3) * (Ep / (p.E_0 + p.Delta_0))
+        # Read parameters from file
+        with open(fpath, 'r') as f:
+            for name, data in yaml.load(f.read()).items():
+                self.data[name] = data['parameters']
 
-    # now also for the gamma_7v and gamma_8v parameters
-    if ('gamma_8v' in bands) or ('gamma_7v' in bands):
-        output['gamma_1'] = p.gamma_1
-        output['gamma_2'] = p.gamma_2
-        output['gamma_3'] = p.gamma_3
-        output['kappa'] = p.kappa
-        output['q'] = p.q
+    def __str__(self):
+        output = "Databank:\n"
+        output += "    bank name: {}\n".format(self.name)
+        output += "    materials: " + ", ".join(list(self))
+        return output
 
-        if 'gamma_6c' in bands:
-            output['gamma_1'] -= (1/3) * (Ep / p.E_0)
-            output['gamma_2'] -= (1/6) * (Ep / p.E_0)
-            output['gamma_3'] -= (1/6) * (Ep / p.E_0)
-            output['kappa'] -= (1/6) * (Ep / p.E_0)
-
-    return output
+    def to_dataframe(self):
+        return pd.DataFrame(self.data).T
 
 
-# System specific parameter functions
-def bulk(bank, material=None, new_gamma_0=None, new_P=None, valence_band_offset=0.0,
-         bands=('gamma_6c', 'gamma_8v', 'gamma_7v'),
-         extra_constants=None):
-    """Get bulk bank of a specified material.
+class BareParameters(UserDict):
+    """Basic band-aware bare parameters class."""
 
-    Parameters
-    ----------
-    bank : str, dict, or dict of dicts
-        This can be either name of the predefined databank, dictionary of
-        parameters, or dictionary of parameters for different materials
-    name : str
-        Must be provided if bank is a string or dict of dicts
-    new_gamma_0 : float (optional)
-        Parameter gamma_0 can be renormalized in order to avoid spurious
-        solutions. Mutually exclusive with "new_P".
-    new_P : float (optional)
-        Parameter gamma_0 can be renormalized in order to avoid spurious
-        solutions. Mutually exclusive with "new_gamma_0".
-    valence_band_offset : float (optional)
-        Adjusts offset of valence band.
-    bands : sequence of strings
-        Bands present in the model.
-    extra_constants : dict (optional)
-        If not None return value will be updated by this dict.
+    def __init__(self, name, bands, parameters, already_bare=False):
+        self.name = name
+        self.bands = bands
 
-    Returns
-    -------
-    bulk parameters : dict
-    """
+        if not already_bare:
+            parameters = self._calculate_bare(parameters.copy())
+        else:
+            parameters = parameters.copy()
 
-    if (new_gamma_0 is not None) and (new_P is not None):
-        raise ValueError("'new_gamma_0' and 'new_P' cannot be used "
-                         "simultaneously.")
+        UserDict.__init__(self, **parameters)
 
-    if isinstance(bank, str):
-        dict_pars = load_params(bank)[material]
-    elif material is not None:
-        dict_pars = bank[material]
-    else:
-        dict_pars = bank
+    @property
+    @abc.abstractmethod
+    def _renormalization_rules(self):
+        pass
 
-    dict_pars['gamma_0'] = 1 / dict_pars.pop('m_c')
-    dict_pars['E_v'] = valence_band_offset
+    def to_effective(self):
+        return self._calculate_bare(self.data, reverse=True)
 
-    if new_P is not None:
-        dict_pars['P'] = new_P
+    def _calculate_bare(self, parameters, reverse=False):
+        renormalizations = self._renormalization_rules
 
-    output = renormalize_parameters(dict_pars, new_gamma_0, bands)
+        bare_parameters = parameters.copy()
+        for parameter_name in set(parameters) & set(renormalizations):
+            # First we go over all renormalization rules for each parameter
+            # and if rule-corresponding band is present in bands we apply it
+            rules = renormalizations[parameter_name]
+            for band_name in rules:
+                # if band not present we can continue
+                if band_name not in self.bands:
+                    continue
+                # otherwise we undo the lowdin transformation
+                f = kwant.continuum.lambdify(rules[band_name])
+                kwargs = {'T': taa}
+                for name in set(inspect.signature(f).parameters) - {'T'}:
+                    try:
+                        kwargs[name] = parameters[name]
+                    except KeyError:
+                        raise ValueError(
+                            "Cannot compute bare value of {}. Parameter "
+                            "{} is unkown. Please update databank first."\
+                            .format(parameter_name, name)
+                        )
+                modifier = f(**kwargs)
+                if not reverse:
+                    bare_parameters[parameter_name] -= modifier
+                else:
+                    bare_parameters[parameter_name] += modifier
 
-    if extra_constants is not None:
-        output.update(extra_constants)
-
-    return output
-
-
-def two_deg(parameters, widths, grid_spacing, extra_constants=None):
-    """Get parameter functions for a specified 2D heterostructure.
-
-    Parameters
-    ----------
-    parameters : sequence of dicts
-        Material parameters for each material in the heterostructure.
-        Only k.p parameters from each dictionary will be used.
-    widths : sequence of numbers
-        Width of each material in the heterostructure.
-    grid_spacing : int, float
-        Grid spacing that is used for discretization.
-    extra_constants : dict
-        Pass extra constants here.
-
-    Returns
-    -------
-    parameters : dictionary of parameter functions
-    walls : array of floats
-    """
-
-    def get_walls(a, Ws):
-        walls = np.cumsum(Ws)[:-1] - 0.5 * a
-        walls = np.insert(walls, 0, -a)
-        walls = np.append(walls, sum(Ws))
-        return walls
-
-    def interp_sn_params(a, walls, values, parameter_name):
-        xs = [x + d for x in walls[1:-1] for d in [-a/2, +a/2]]
-        xs = [walls[0]] + xs + [walls[-1]]
-        ys = [p[parameter_name] for p in values for i in range(2)]
-        return interp1d(xs, ys, fill_value='extrapolate')
-
-    # Varied parameters should probably be a union of available k·p parameters
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
-                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
-
-    walls = get_walls(grid_spacing, widths)
-
-    output = {par: interp_sn_params(grid_spacing, walls, parameters, par)
-              for par in varied_parameters}
-
-    if extra_constants is not None:
-        output.update(extra_constants)
-
-    return output, walls
+        return bare_parameters
 
 
-# Plotting helper function
-def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
-    """Plot band edges."""
-    import matplotlib.pyplot as plt
-    y1 = two_deg_params['E_v'](xpos)
-    y2 = y1 + two_deg_params['E_0'](xpos)
+class ZincBlendeParameters(BareParameters):
+    """Parameter class for ZincBlende materials."""
 
-    fig = plt.figure(figsize=(20, 5))
-    plt.plot(xpos, y1, '-o')
-    plt.plot(xpos, y2, '-o')
+    _renormalization_rules = {
+        'gamma_0': {
+            'gamma_8v': "(2 / 3) * (1 / T) * P**2 / E_0",
+            'gamma_7v': "(1 / 3) * (1 / T) * P**2 / (E_0 + Delta_0)"
+        },
+        'g_c': {
+            'gamma_8v': "-(2 / 3) * (1 / T) * P**2 / E_0",
+            'gamma_7v': "(2 / 3) * (1 / T) * P**2 / (E_0 + Delta_0)"
+        },
+        'gamma_1': {
+            'gamma_6c': "(1 / 3) * (1 / T) * P**2 / E_0"
+        },
+        'gamma_2': {
+            'gamma_6c': "(1 / 6) * (1 / T) * P**2 / E_0"
+        },
+        'gamma_3': {
+            'gamma_6c': "(1 / 6) * (1 / T) * P**2 / E_0"
+        },
+        'kappa': {
+            'gamma_6c': "(1 / 6) * (1 / T) * P**2 / E_0"
+        }
+    }
 
-    if walls is not None:
-        walls_y = [min([np.min(y1), np.min(y2)]),
-                   max([np.max(y1), np.max(y2)])]
-        for w in walls:
-            plt.plot([w, w], walls_y, 'k--')
+    def __init__(self, name, bands, parameters, valence_band_offset=0,
+                 already_bare=False):
+        parameters = parameters.copy()
 
-    if show_fig:
-        plt.show()
+        if 'm_c' in parameters:
+            parameters['gamma_0'] = 1 / parameters.pop('m_c')
 
-    return fig
+        if 'E_v' in parameters:
+            parameters['E_v'] += valence_band_offset
+        else:
+            parameters['E_v'] = valence_band_offset
+
+        BareParameters.__init__(
+            self, name=name, bands=bands, parameters=parameters,
+            already_bare=already_bare
+        )
+
+    def renormalize(self, new_gamma_0=None, new_P=None):
+        if (new_gamma_0 is not None) and (new_P is not None):
+            msg = "'new_gamma_0' and 'new_P' are mutually exclusive."
+            raise ValueError(msg)
+
+        if 'gamma_6c' not in self.bands:
+            msg = "Cannot apply workaround without the electron band."
+            raise ValueError(msg)
+
+        if ('gamma_7v' not in self.bands) or ('gamma_8v' not in self.bands):
+            msg = "Cannot apply workaround without at least one hole band."
+            raise ValueError(msg)
+
+        effective = self.to_effective()
+
+        if new_gamma_0 is not None:
+            # First, calculate scaling factor
+            factor = 0
+
+            if 'gamma_7v' in self.bands:
+                factor += (2 / 3) / effective['E_0']
+
+            if 'gamma_8v' in self.bands:
+                factor += (1 / 3) / (effective['E_0'] + effective['Delta_0'])
+
+            # Second, calculate required P
+            P2 = (effective['gamma_0'] - new_gamma_0) * (taa / factor)
+            new_P = np.sqrt(P2)
+
+        effective['P'] = new_P
+        output = ZincBlendeParameters(name=self.name, bands=self.bands,
+                                      parameters=effective)
+
+        return output
