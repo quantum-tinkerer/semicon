@@ -1,14 +1,33 @@
 import abc
 import copy
+import json
+import os
 
 import numpy as np
 import scipy.linalg as la
 # from IPython import display
+import sympy
+
+import kwant
 
 from .misc import spin_matrices, rotate, prettify
 from .symbols import momentum
 from . import new_parameters as parameters
 
+
+# Read the cache
+def _load_cache():
+    """Load cached models.
+
+    File semicon/cache.json should be created on package build.
+    """
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    fname = os.path.join(BASE_DIR, 'model_cache.json')
+    with open(fname) as f:
+        models_cache = json.load(f)
+    return models_cache
+
+_models_cache = _load_cache()
 
 
 class Model(metaclass=abc.ABCMeta):
@@ -105,6 +124,7 @@ class BandModel(Model):
         # Now we can build hamiltonian and the spin operators
         hamiltonian = self._build_hamiltonian()
 
+        # Finally, we call base constructor to
         Model.__init__(self, hamiltonian=hamiltonian, spins=self.spins)
 
     @abc.abstractmethod
@@ -118,17 +138,24 @@ class BandModel(Model):
     @property
     @abc.abstractmethod
     def _allowed_bands():
-        """Mapping: allowed band -> band's spin."""
+        """Sequence of allowed model bands."""
         pass
 
     @property
     @abc.abstractmethod
     def _allowed_components():
+        """Sequence of allowed model components."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def _band_spins():
+        """Mapping: band name -> spin."""
         pass
 
     @property
     def spins(self):
-        spins = [self._allowed_bands[band] for band in self.bands]
+        spins = [self._band_spins[band] for band in self.bands]
         return spins
 
 
@@ -140,22 +167,52 @@ class ZincBlende(BandModel):
     """Model for ZincBlende crystals."""
 
     _allowed_components = ('foreman', 'zeeman')
-    _allowed_bands = {'gamma_6c': 1/2, 'gamma_8v': 3/2, 'gamma_7v': 1/2}
+    _allowed_bands = ('gamma_6c', 'gamma_8v', 'gamma_7v')
 
-    def __init__(self, bands, components, parameter_dependence=None,
+    _band_spins = {
+        'gamma_6c': 1/2,
+        'gamma_8v': 3/2,
+        'gamma_7v': 1/2
+    }
+
+    _band_indices = {
+        'gamma_6c': [0, 1],
+        'gamma_8v': [2, 3, 4, 5],
+        'gamma_7v': [6, 7]
+    }
+
+    def __init__(self, bands, components, parameter_coords=None,
                  default_databank=None):
-        self._parameter_dependence = parameter_dependence
+        self._parameter_coords = parameter_coords
 
         if isinstance(default_databank, str):
             self.default_databank = parameters.DataBank(default_databank)
         else:
             self.default_databank = default_databank
 
-
         BandModel.__init__(self, bands=bands, components=components)
 
     def _build_hamiltonian(self):
-        return foreman(self._parameter_dependence, self.components, self.bands)
+        # return foreman(self._parameter_coords, self.components, self.bands)
+        if self._parameter_coords is not None:
+            self._parameter_coords = validate_coords(self._parameter_coords)
+            str_coords = '({})'.format(", ".join(self._parameter_coords))
+            subs = {v: v + str_coords for v in varied_parameters}
+        else:
+            subs = {}
+
+        hamiltonian_components = [
+            kwant.continuum.sympify(_models_cache[c], locals=subs)
+            for c in self.components
+        ]
+
+        hamiltonian = sympy.ImmutableMatrix(sympy.MatAdd(*hamiltonian_components))
+
+        indices = []
+        for band in self.bands:
+            indices += self._band_indices[band]
+
+        return hamiltonian[:, indices][indices, :]
 
     def parameters(self, material, databank=None, valence_band_offset=0):
         if databank is None:
