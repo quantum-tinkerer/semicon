@@ -57,7 +57,7 @@ setup(
 
     long_description=read("README.md"),
     platforms=["Unix", "Linux"],
-    url="https://gitlab.kwant-project.org/r-j-skolasinski/semicon",
+    url="https://gitlab.kwant-project.org/semicon/semicon",
 
 
     packages=find_packages('.'),

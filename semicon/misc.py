@@ -26,7 +26,7 @@ def spin_matrices(s):
     diag = [(1 / 2) * np.sqrt(2 * i * (s + 1) - i * (i + 1)) for i in np.arange(1, d)]
     Sx = np.diag(diag, k=1) + np.diag(diag, k=-1)
     Sy = -1j * np.diag(diag, k=1) + 1j * np.diag(diag, k=-1)
-    return Sx, Sy, Sz
+    return np.array([Sx, Sy, Sz])
 
 
 def _prettify_term(expr, decimals=None, zero_atol=None, nsimplify=False):

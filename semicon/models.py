@@ -51,16 +51,25 @@ class Model(metaclass=abc.ABCMeta):
 
     Attributes
     ----------
-    hamiltonian : sympy.Expr or sympy.Matrix
+    hamiltonian : str, sympy.Expr or sympy.Matrix
     spin_operators : spin_operators, a 3D tensor
     spins : sequence of spins, alternative to spin_operators
+    locals : dict or None, to be passed to kwant.continuum.sympify if
+             hamiltonian is string
 
     Methods
     -------
     rotate : rotate model, see documentation of the method
     prettify : prettify model, see documentation of the meth
     """
-    def __init__(self, hamiltonian, spin_operators=None, spins=None):
+    def __init__(self, hamiltonian, spin_operators=None, spins=None,
+                 locals=None):
+        if isinstance(hamiltonian, str):
+            hamiltonian = kwant.continuum.sympify(hamiltonian, locals=locals)
+        elif locals is not None:
+            raise ValueError('locals can be not None only when hamiltonian is '
+                             'of type string.')
+
         if (spin_operators is not None) and (spins is not None):
             raise ValueError(
                 '"spin_operators" and "spins" are mutually exclusive'
