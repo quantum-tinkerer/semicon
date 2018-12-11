@@ -1,51 +1,46 @@
 import kwant
 import sympy
 
-from semicon.models import foreman
-from semicon.kp_models.explicit_foreman import foreman as reference_foreman
-from semicon.kp_models.explicit_zeeman import zeeman as reference_zeeman
+from semicon.misc import prettify
+from semicon.models import ZincBlende
+from kp_models.explicit_foreman import foreman as reference_foreman
+from kp_models.explicit_zeeman import zeeman as reference_zeeman
 
 
+
+# Prepare reference Hamiltonian with proper commutivities
+varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
+                     'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
+
+substitutions = {v: v+'(x, y, z)' for v in varied_parameters}
+
+reference_foreman = kwant.continuum.sympify(
+    str(reference_foreman),
+    locals=substitutions
+)
+
+reference_zeeman = kwant.continuum.sympify(
+    str(reference_zeeman),
+    locals=substitutions
+)
+
+
+# Define helper functions
+def isclose(a, b):
+    return prettify(a - b, zero_atol=1e-8) == sympy.zeros(*a.shape)
+
+
+# Test functions
 def test_serialized_foreman():
-    smp = foreman('xyz')
-
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
-                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
-
-    substitutions = {v: v+'(x, y, z)' for v in varied_parameters}
-    substitutions = {sympy.Symbol(k, commutative=False): kwant.continuum.sympify(v)
-                     for k, v in substitutions.items()}
-    reference = reference_foreman.subs(substitutions)
-
-    assert sympy.expand(smp - reference) == sympy.zeros(8, 8)
+    smp = ZincBlende(parameter_coords='xyz')
+    assert isclose(smp.hamiltonian, reference_foreman)
 
 
 def test_serialized_zeeman():
-    smp = foreman('xyz', components=['zeeman'])
-
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
-                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
-
-    substitutions = {v: v+'(x, y, z)' for v in varied_parameters}
-    substitutions = {sympy.Symbol(k, commutative=False): kwant.continuum.sympify(v)
-                     for k, v in substitutions.items()}
-    reference = reference_zeeman.subs(substitutions)
-
-    assert sympy.expand(smp - reference) == sympy.zeros(8, 8)
+    smp = ZincBlende(components=['zeeman'], parameter_coords='xyz')
+    assert isclose(smp.hamiltonian, reference_zeeman)
 
 
 def test_serialized_foremanzeeman():
-    smp = foreman('xyz', components=['zeeman', 'foreman'])
-
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
-                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
-
-    substitutions = {v: v+'(x, y, z)' for v in varied_parameters}
-    substitutions = {sympy.Symbol(k, commutative=False): kwant.continuum.sympify(v)
-                     for k, v in substitutions.items()}
-    reference = (
-        reference_foreman.subs(substitutions)
-        + reference_zeeman.subs(substitutions)
-    )
-
-    assert sympy.expand(smp - reference) == sympy.zeros(8, 8)
+    smp = ZincBlende(components=['zeeman', 'foreman'], parameter_coords='xyz')
+    assert isclose(smp.hamiltonian, reference_foreman + reference_zeeman)
