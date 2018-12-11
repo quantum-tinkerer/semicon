@@ -4,8 +4,7 @@
 
 import numpy as np
 import scipy.linalg as la
-from itertools import product
-from collections import Mapping, defaultdict
+from collections import defaultdict
 
 from scipy.interpolate import interp1d
 from scipy.spatial.transform import Rotation

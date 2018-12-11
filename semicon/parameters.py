@@ -1,5 +1,4 @@
 import abc
-import copy
 import os
 import re
 import yaml
