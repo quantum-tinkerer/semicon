@@ -128,6 +128,9 @@ class BandModel(Model):
 
     def __init__(self, bands, components):
 
+        bands = np.atleast_1d(bands)
+        components = np.atleast_1d(components)
+
         # Validate input arguments
         if not all(band in self._allowed_bands for band in bands):
             raise ValueError("Please provide valid bands. Allowed"
@@ -135,7 +138,7 @@ class BandModel(Model):
 
         if not all(c in self._allowed_components for c in components):
             raise ValueError("Please provide valid components. Allowed"
-                             "components are {}".format(self._allowed_bands))
+                             "components are {}".format(self._allowed_components))
 
         # If everything is good we proceed with assigning the input arguments
         self.bands = bands

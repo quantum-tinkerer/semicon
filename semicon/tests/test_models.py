@@ -11,16 +11,16 @@ from semicon.models import Model, ZincBlende
 
 from kp_models.explicit_foreman import foreman as reference_foreman
 from kp_models.explicit_zeeman import zeeman as reference_zeeman
-from kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
+from kp_models import symbols
 
 
-sigma_x = np.array(sigma_x.tolist(), dtype=complex)
-sigma_y = np.array(sigma_y.tolist(), dtype=complex)
-sigma_z = np.array(sigma_z.tolist(), dtype=complex)
+sigma_x = np.array(symbols.sigma_x.tolist(), dtype=complex)
+sigma_y = np.array(symbols.sigma_y.tolist(), dtype=complex)
+sigma_z = np.array(symbols.sigma_z.tolist(), dtype=complex)
 
-Jx = np.array(Jx.tolist(), dtype=complex)
-Jy = np.array(Jy.tolist(), dtype=complex)
-Jz = np.array(Jz.tolist(), dtype=complex)
+Jx = np.array(symbols.Jx.tolist(), dtype=complex)
+Jy = np.array(symbols.Jy.tolist(), dtype=complex)
+Jz = np.array(symbols.Jz.tolist(), dtype=complex)
 
 
 # Prepare reference Hamiltonian with proper commutivities
@@ -64,8 +64,8 @@ def test_serialized_foremanzeeman():
 
 
 
-# Sanity check of returned types (if something breaks just a little, it will
-# break here for sure...)
+# Sanity check of content: type, shape, included symbols...
+# (if something is failing really badly, it should fail here)
 
 @pytest.mark.parametrize('ham_str', [
     "A_x * k_x**2 + A_y * k_y**2",
@@ -79,6 +79,31 @@ def test_model_creation(ham_str):
     locals = {'A_x': 1, 'A_y': 2}
     smp = kwant.continuum.sympify(ham_str, locals=locals)
     assert smp == Model(ham_str, locals=locals).hamiltonian
+
+
+@pytest.mark.parametrize('bands, shape', [
+    ('gamma_6c', (2, 2)),
+    ('gamma_8v', (4, 4)),
+    ('gamma_7v', (2, 2)),
+    (('gamma_6c', 'gamma_8v'), (6, 6)),
+    (('gamma_6c', 'gamma_7v'), (4, 4)),
+    (('gamma_8v', 'gamma_7v'), (6, 6)),
+])
+def test_hamiltonian_shape(bands, shape):
+    model = ZincBlende(bands=bands)
+    assert model.hamiltonian.shape == shape
+
+
+@pytest.mark.parametrize('coords, components, must_have_symbols', [
+    (None, 'foreman', kwant.continuum.momentum_operators),
+    ('xyz', 'foreman', kwant.continuum.position_operators),
+    (None, 'zeeman', symbols.magnetic_symbols),
+])
+def test_hamiltonian_symbols(coords, components, must_have_symbols):
+    model = ZincBlende(components=components, parameter_coords=coords)
+    atoms = model.hamiltonian.atoms(sympy.Symbol)
+    assert set(must_have_symbols).issubset(atoms)
+
 
 
 # Test rotation functionality

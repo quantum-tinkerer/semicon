@@ -9,14 +9,14 @@ def kill_complex(smp):
     return smp.subs(subs)
 
 
-B_6c6c = sympy.Rational(1, 2) * g * u_b * (sigma_x * Bx +
+B_6c6c = sympy.Rational(1, 2) * g * mu_b * (sigma_x * Bx +
                                            sigma_y * By + sigma_z * Bz)
-B_8v8v = -2 * u_b * (kappa * (Jx * Bx + Jy * By + Jz * Bz) +
+B_8v8v = -2 * mu_b * (kappa * (Jx * Bx + Jy * By + Jz * Bz) +
                      q * (Jx**3 * Bx + Jy**3 * By + Jz**3 * Bz))
-B_7v8v = -3 * u_b * kappa * (Tx * Bx + Ty * By + Tz * Bz)
-B_8v7v = -3 * u_b * kappa * \
+B_7v8v = -3 * mu_b * kappa * (Tx * Bx + Ty * By + Tz * Bz)
+B_8v7v = -3 * mu_b * kappa * \
     (Tx * Bx + Ty * By + Tz * Bz).conjugate().transpose()
-B_7v7v = -2 * kappa * u_b * (sigma_x * Bx + sigma_y * By + sigma_z * Bz)
+B_7v7v = -2 * kappa * mu_b * (sigma_x * Bx + sigma_y * By + sigma_z * Bz)
 
 
 zeeman = sympy.BlockMatrix([[B_6c6c, sympy.zeros(2, 4), sympy.zeros(2, 2)],
