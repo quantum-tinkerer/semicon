@@ -13,6 +13,7 @@ build package:
 test package:
   stage: test
   script:
+    - pip3 install sympy==1.1.1
     - pip3 install -e .
     - py.test -r w --cov semicon --cov-report term --flakes semicon
 
@@ -20,6 +21,15 @@ test package:
 test package with latest scipy:
   stage: test
   script:
-    - pip3 install scipy==1.2.0rc2
+    - pip3 install sympy==1.1.1 scipy==1.2.0rc2
+    - pip3 install -e .
+    - py.test -r w --cov semicon --cov-report term --flakes semicon
+
+
+test package with latest SymPy and Kwant stable:
+  stage: test
+  script:
+    - pip3 install sympy
+    - pip3 install git+https://gitlab.kwant-project.org/kwant/kwant.git@stable
     - pip3 install -e .
     - py.test -r w --cov semicon --cov-report term --flakes semicon
