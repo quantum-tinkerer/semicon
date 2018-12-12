@@ -64,7 +64,7 @@ setup(
     package_data={'': [cache_fname, csv_fnames]},
 
     setup_requires=['sympy >= 0.7.6'],
-    install_requires=['kwant >= 1.3', 'sympy >= 0.7.6', 'pandas >= 0.19.2'],
+    install_requires=['kwant >= 1.3', 'sympy >= 1.1.1', 'pandas >= 0.19.2'],
     classifiers=[c.strip() for c in classifiers.split('\n')]
 )
 
