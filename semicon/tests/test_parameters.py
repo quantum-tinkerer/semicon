@@ -17,5 +17,5 @@ def test_databank_dataframe_conversion(databank_name):
     db = DataBank(databank_name)
     df = db.to_dataframe()
 
-    assert list(db) == list(df.index)
+    assert sorted(list(db)) == sorted(list(df.index))
     assert isinstance(df, pd.DataFrame)
