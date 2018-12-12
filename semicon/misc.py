@@ -2,12 +2,21 @@
 # See comments for each group of functions for more details.
 
 
+import warnings
+
 import numpy as np
 import scipy.linalg as la
 from collections import defaultdict
 
 from scipy.interpolate import interp1d
-from scipy.spatial.transform import Rotation
+
+try:
+    from scipy.spatial.transform import Rotation
+    rotation_functionality_available = True
+except ImportError:
+    warnings.warn("Rotation functionality not availble unless "
+                  "scipy 1.2 or greater is installed", RuntimeWarning)
+    rotation_functionality_available = False
 
 import sympy
 import kwant
@@ -104,6 +113,10 @@ def _basis_rotation(R, spin_operators):
 
 
 def rotate(expr, R, act_on=momentum, spin_operators=None):
+    if not rotation_functionality_available:
+        raise RuntimeError("Rotation functionality not availble. Please, "
+                           "install scipy 1.2 or greater.")
+
     _validate_rotation_matrix(R)
     rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
 

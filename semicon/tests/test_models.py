@@ -2,13 +2,11 @@ import pytest
 
 import numpy as np
 import scipy.linalg as la
-from scipy.spatial.transform import Rotation
-
 import kwant
 import sympy
 
 
-from semicon.misc import prettify
+from semicon.misc import prettify, rotation_functionality_available
 from semicon.models import Model, ZincBlende
 
 from kp_models.explicit_foreman import foreman as reference_foreman
@@ -104,6 +102,11 @@ def test_rotation():
     2) applying same to momenta but having spin include by working with matrices
     3) applying the builtin methods
     """
+    if not rotation_functionality_available:
+        return
+    else:
+        from scipy.spatial.transform import Rotation
+
     tmp_str = "alpha_{0} * k_{0} * sigma_{0}"
     ham_str = " + ".join(tmp_str.format(s) for s in ['x', 'y', 'z'])
     sx, sy, sz = sympy.symbols('sigma_x sigma_y sigma_z')
