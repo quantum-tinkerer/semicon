@@ -13,6 +13,6 @@ build package:
 test package:
   stage: test
   script:
-    - pip3 install pyyaml scipy==1.2.0rc2
+    - pip3 install pyyaml sympy==1.1.1 scipy==1.2.0rc2
     - pip3 install -e .
     - py.test -r w --cov semicon --cov-report term --flakes semicon
