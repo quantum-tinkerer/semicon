@@ -23,10 +23,13 @@ Jz = np.array(symbols.Jz.tolist(), dtype=complex)
 
 # Define helper functions
 def isclose(a, b):
-    return prettify(a - b, zero_atol=1e-8) == sympy.zeros(*a.shape)
+    if isinstance(a, sympy.matrices.MatrixBase):
+        return prettify(a - b, zero_atol=1e-8) == sympy.zeros(*a.shape)
+    else:
+        return prettify(a - b, zero_atol=1e-8) == 0
 
 
-# Test models
+# Baisc model tests
 
 @pytest.mark.parametrize('ham_str', [
     "A_x * k_x**2 + A_y * k_y**2",
@@ -41,6 +44,39 @@ def test_model_creation(ham_str):
     smp = kwant.continuum.sympify(ham_str, locals=locals)
     assert smp == Model(ham_str, locals=locals).hamiltonian
 
+
+@pytest.mark.parametrize('str_input, str_output, decimals', [
+    ("0.12345 * k_x**2", "0.123 * k_x**2", 3),
+    ("0.12345 * k_x**2 * sigma_z", "0.123 * k_x**2 * sigma_z", 3),
+    ("0.12345 * k_x**2", "0.1234 * k_x**2", 4),
+    ("0.12345 * k_x**2 * sigma_z", "0.1234 * k_x**2 * sigma_z", 4),
+])
+def test_prettify_decimals(str_input, str_output, decimals):
+    m = Model(str_input).prettify(decimals=decimals)
+    assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
+
+
+@pytest.mark.parametrize('str_input, str_output, zero_atol', [
+    ("1.123e-3 * k_x**2 + 5", "1.123e-3 * k_x**2 + 5", 1e-4),
+    ("1.123e-3 * k_x**2 + 5", "5", 1e-2),
+    ("(1.123e-3 * k_x**2 + 5) * sigma_z", "(1.123e-3 * k_x**2 + 5) * sigma_z", 1e-4),
+    ("(1.123e-3 * k_x**2 + 5) * sigma_z", "5 * sigma_z", 1e-2),
+])
+def test_prettify_zero_atol(str_input, str_output, zero_atol):
+    m = Model(str_input).prettify(zero_atol=zero_atol)
+    assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
+
+
+@pytest.mark.parametrize('str_input, str_output, nsimplify', [
+    ("1.7320508075688772 * k_x**2", "1.7320508075688772 * k_x**2", False),
+    ("1.7320508075688772 * k_x**2", "sqrt(3) * k_x**2", True),
+    ("1.7320508075688772 * k_x**2 + 5", "sqrt(3) * k_x**2 + 5", True),
+    ("1.7320508075688772 * k_x**2 * sigma_z", "1.7320508075688772 * k_x**2 * sigma_z", False),
+    ("1.7320508075688772 * k_x**2 * sigma_z", "sqrt(3) * k_x**2 * sigma_z", True),
+])
+def test_prettify_zero_nsimplify(str_input, str_output, nsimplify):
+    m = Model(str_input).prettify(nsimplify=nsimplify)
+    assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
 
 
 # Test rotation functionality
