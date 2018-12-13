@@ -33,8 +33,18 @@ def build_cache():
         json.dump(data, f)
 
 
-# Standard python build
-print("path", BASE_DIR)
+# Loads version.py module without importing the whole package.
+def get_version_and_cmdclass(package_path):
+    import os
+    from importlib.util import module_from_spec, spec_from_file_location
+    spec = spec_from_file_location('version',
+                                   os.path.join(package_path, '_version.py'))
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.__version__, module.cmdclass
+
+
+version, cmdclass = get_version_and_cmdclass('semicon')
 
 classifiers = """\
     Development Status :: 3 - Alpha
@@ -48,7 +58,7 @@ classifiers = """\
 
 setup(
     name="semicon",
-    version="0.0.0",
+    version=version,
 
     author='R.J. Skolasinski',
     author_email='r.j.skolasinski@gmail.com',
@@ -66,7 +76,8 @@ setup(
     setup_requires=['sympy >= 0.7.6'],
     install_requires=['pyyaml', 'scipy >= 0.17', 'kwant >= 1.3',
                       'sympy >= 1.1.1', 'pandas >= 0.19.2'],
-    classifiers=[c.strip() for c in classifiers.split('\n')]
+    classifiers=[c.strip() for c in classifiers.split('\n')],
+    cmdclass=cmdclass,
 )
 
 
