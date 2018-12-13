@@ -3,7 +3,7 @@
 import os
 import imp
 import json
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 # Utility function to read the README file.
@@ -12,25 +12,6 @@ from setuptools import setup, find_packages
 # string in below ...
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-# Building cache
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cache_fname = os.path.join(BASE_DIR, 'semicon', 'model_cache.json')
-parameter_files = os.path.join(BASE_DIR, 'semicon', 'databank', '*.yml')
-
-
-def build_cache():
-    print("building models' cache")
-    from kp_models import explicit_foreman, explicit_zeeman
-
-    data = {
-        'foreman': str(explicit_foreman.foreman),
-        'zeeman': str(explicit_zeeman.zeeman),
-    }
-    with open(cache_fname, 'w') as f:
-        json.dump(data, f)
 
 
 # Loads version.py module without importing the whole package.
@@ -45,6 +26,29 @@ def get_version_and_cmdclass(package_path):
 
 
 version, cmdclass = get_version_and_cmdclass('semicon')
+
+# Build model cache from 'kp_models' package
+class build_cache(cmdclass['build_py']):
+
+    def run(self):
+        # make sure we run the miniver stuff
+        super().run()
+
+        print('building model cache')
+        # importing 'kp_models' does work, so we do it here.
+        from kp_models import explicit_foreman, explicit_zeeman
+
+        data = {
+            'foreman': str(explicit_foreman.foreman),
+            'zeeman': str(explicit_zeeman.zeeman),
+        }
+        cache_file = os.path.join(self.build_lib, 'semicon',
+                                  'model_cache.json')
+        with open(cache_file, 'w') as f:
+            json.dump(data, f)
+
+
+cmdclass['build_py'] = build_cache
 
 classifiers = """\
     Development Status :: 3 - Alpha
@@ -62,7 +66,7 @@ setup(
 
     author='R.J. Skolasinski',
     author_email='r.j.skolasinski@gmail.com',
-    description=("Python package for doing k·p simulation"),
+    description=("Package for simulating quantum mechanical k·p Hamiltonians"),
     license="BSD",
 
     long_description=read("README.md"),
@@ -70,8 +74,8 @@ setup(
     url="https://gitlab.kwant-project.org/semicon/semicon",
 
 
-    packages=find_packages('.'),
-    package_data={'': [cache_fname, parameter_files]},
+    packages=['semicon', 'semicon.tests'],
+    package_data={'semicon': ['databank/*.yml']},
 
     setup_requires=['sympy >= 0.7.6'],
     install_requires=['pyyaml', 'scipy >= 0.17', 'kwant >= 1.3',
@@ -79,6 +83,3 @@ setup(
     classifiers=[c.strip() for c in classifiers.split('\n')],
     cmdclass=cmdclass,
 )
-
-
-build_cache()
