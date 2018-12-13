@@ -8,7 +8,7 @@ import scipy.linalg as la
 # from IPython import display
 import sympy
 
-import kwant
+import kwant.continuum
 
 from .misc import spin_matrices, rotate, prettify
 from .symbols import momentum

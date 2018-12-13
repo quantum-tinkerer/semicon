@@ -1,7 +1,7 @@
 import pytest
 
 
-import kwant
+import kwant.continuum
 import sympy
 
 from semicon.models import ZincBlende

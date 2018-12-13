@@ -19,7 +19,7 @@ except ImportError:
     rotation_functionality_available = False
 
 import sympy
-import kwant
+import kwant.continuum
 
 from .symbols import momentum
 

@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 import scipy.linalg as la
-import kwant
+import kwant.continuum
 import sympy
 
 
