@@ -18,7 +18,7 @@ def read(fname):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cache_fname = os.path.join(BASE_DIR, 'semicon', 'model_cache.json')
-csv_fnames = os.path.join(BASE_DIR, 'semicon', 'databank', '*.csv')
+parameter_files = os.path.join(BASE_DIR, 'semicon', 'databank', '*.yml')
 
 
 def build_cache():
@@ -61,7 +61,7 @@ setup(
 
 
     packages=find_packages('.'),
-    package_data={'': [cache_fname, csv_fnames]},
+    package_data={'': [cache_fname, parameter_files]},
 
     setup_requires=['sympy >= 0.7.6'],
     install_requires=['pyyaml', 'scipy >= 0.17', 'kwant >= 1.3',
