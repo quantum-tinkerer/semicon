@@ -1,14 +1,7 @@
 image: kwant/testing
 
 stages:
-  - build
   - test
-
-build package:
-  stage: build
-  script:
-    - python3 setup.py build
-
 
 test package:
   stage: test
