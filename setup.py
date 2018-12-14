@@ -86,7 +86,8 @@ setup(
     url="https://gitlab.kwant-project.org/semicon/semicon",
 
 
-    packages=['semicon', 'semicon.tests'],
+    packages=['semicon', 'semicon.tests', 'semicon.kp_models'],
+    package_dir={'semicon.kp_models': 'kp_models'},
     package_data={'semicon': ['databank/*.yml']},
 
     setup_requires=['sympy >= 0.7.6'],
