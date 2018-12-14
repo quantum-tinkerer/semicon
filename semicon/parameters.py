@@ -31,7 +31,7 @@ DATABANK_DIR = os.path.join(BASE_DIR, 'databank')
 def _find_available_databanks():
     names = []
     for fname in os.listdir(DATABANK_DIR):
-        match = re.match("^bank_(.+)\.yml$", fname)
+        match = re.match(r"^bank_(.+)\.yml$", fname)
         if match is not None:
             names.append(match.group(1))
     return names
