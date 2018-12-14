@@ -2,18 +2,40 @@
 # See comments for each group of functions for more details.
 
 
+import warnings
+
 import numpy as np
 import scipy.linalg as la
-import xarray as xr
-from itertools import product
-from collections import Mapping, defaultdict
+from collections import defaultdict
 
-from scipy.spatial.transform import Rotation
+from scipy.interpolate import interp1d
+
+try:
+    from scipy.spatial.transform import Rotation
+    rotation_functionality_available = True
+except ImportError:
+    warnings.warn("Rotation functionality not availble unless "
+                  "scipy 1.2 or greater is installed", RuntimeWarning)
+    rotation_functionality_available = False
 
 import sympy
-import kwant
+import kwant.continuum
 
-from . import symbols
+from .symbols import momentum
+
+
+def spin_matrices(s):
+    """Construct spin-s matrices for any spin."""
+    d = np.round(2*s + 1)
+    if not np.isclose(d, int(d)):
+        raise ValueError("Argument 's' must be integer or half integer.")
+    d = int(d)
+    Sz = 1/2 * np.diag(np.arange(d - 1, -d, -2))
+    # first diagonal for general s from en.wikipedia.org/wiki/Spin_(physics)
+    diag = [(1 / 2) * np.sqrt(2 * i * (s + 1) - i * (i + 1)) for i in np.arange(1, d)]
+    Sx = np.diag(diag, k=1) + np.diag(diag, k=-1)
+    Sy = -1j * np.diag(diag, k=1) + 1j * np.diag(diag, k=-1)
+    return np.array([Sx, Sy, Sz])
 
 
 def _prettify_term(expr, decimals=None, zero_atol=None, nsimplify=False):
@@ -67,25 +89,52 @@ def sympy_to_numpy(arr, dtype=complex):
         return np.array(arr.tolist(), dtype=dtype)
 
 
-def rotate_symbols(expr, R):
-    rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
+def _validate_rotation_matrix(R):
+    if not R.shape[0] == R.shape[1] == 3:
+        raise ValueError("Rotation matrix is expected to be 3x3 unitary Matrix")
+    if isinstance(R, np.ndarray):
+        det = la.det(R)
+    elif isinstance(R, sympy.matrices.MatrixBase):
+        det = R.det()
+    else:
+        raise ValueError("rotation matrix should be defined as np.array or "
+                         "sympy.Matrix")
 
-    subs1 = rotation_subs(R, sympy.Matrix(symbols.momentum_symbols))
-    subs2 = rotation_subs(R, sympy.Matrix(symbols.position_symbols))
-    subs3 = rotation_subs(R, sympy.Matrix(symbols.magnetic_symbols))
-    subs = {**subs1, **subs2, **subs3}
-    # "simultaneous" flag is very important here
-    # note that SymPy takes it as **kwargs and there
-    # is no validation for typos!!!
-    return expr.subs(subs, simultaneous=True).expand()
+    if not np.allclose(float(det), 1):
+        raise ValueError("Determinant of rotation matrix must be 1.")
 
 
-def basis_rotation(R, spin_operators):
+def _basis_rotation(R, spin_operators):
     R = sympy_to_numpy(R, dtype=float)
     n = Rotation.from_dcm(R).as_rotvec()
     spin_operators = [sympy_to_numpy(s) for s in spin_operators]
     ns = np.sum([ni * si for (ni, si) in zip(n, spin_operators)], axis=0)
     return la.expm(1j * ns)
+
+
+def rotate(expr, R, act_on=momentum, spin_operators=None):
+    if not rotation_functionality_available:
+        raise RuntimeError("Rotation functionality not availble. Please, "
+                           "install scipy 1.2 or greater.")
+
+    _validate_rotation_matrix(R)
+    rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
+
+    subs = {}
+    for row in np.atleast_2d(act_on):
+        new_subs = rotation_subs(R, sympy.Matrix(row))
+        subs.update(new_subs)
+
+    # "simultaneous" flag is very important here
+    # note that SymPy takes it as **kwargs and there
+    # is no validation for typos!!!
+    expr = expr.subs(subs, simultaneous=True)
+
+    if spin_operators is not None:
+        U = _basis_rotation(R, spin_operators)
+        expr = U @ expr @ U.transpose().conjugate()
+
+    return expr.expand()
 
 
 
@@ -178,3 +227,76 @@ def _expression_monomials(expr, gens):
         output[sympy.Mul(*key)] += sympy.Mul(*val)
 
     return dict(output)
+
+
+
+### Helper functions, to be replaced with something better...
+def two_deg(parameters, widths, grid_spacing, extra_constants=None):
+    """Get parameter functions for a specified 2D heterostructure.
+
+    Parameters
+    ----------
+    parameters : sequence of dicts
+        Material parameters for each material in the heterostructure.
+        Only k.p parameters from each dictionary will be used.
+    widths : sequence of numbers
+        Width of each material in the heterostructure.
+    grid_spacing : int, float
+        Grid spacing that is used for discretization.
+    extra_constants : dict
+        Pass extra constants here.
+
+    Returns
+    -------
+    parameters : dictionary of parameter functions
+    walls : array of floats
+    """
+
+    def get_walls(a, Ws):
+        walls = np.cumsum(Ws)[:-1] - 0.5 * a
+        walls = np.insert(walls, 0, -a)
+        walls = np.append(walls, sum(Ws))
+        return walls
+
+    def interp_sn_params(a, walls, values, parameter_name):
+        xs = [x + d for x in walls[1:-1] for d in [-a/2, +a/2]]
+        xs = [walls[0]] + xs + [walls[-1]]
+        ys = [p[parameter_name] for p in values for i in range(2)]
+        return interp1d(xs, ys, fill_value='extrapolate')
+
+    # Varied parameters should probably be a union of available k·p parameters
+    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
+                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
+
+    walls = get_walls(grid_spacing, widths)
+
+    output = {par: interp_sn_params(grid_spacing, walls, parameters, par)
+              for par in varied_parameters}
+
+    if extra_constants is not None:
+        output.update(extra_constants)
+
+    return output, walls
+
+
+# Plotting helper function
+def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
+    """Plot band edges."""
+    import matplotlib.pyplot as plt
+    y1 = two_deg_params['E_v'](xpos)
+    y2 = y1 + two_deg_params['E_0'](xpos)
+
+    fig = plt.figure(figsize=(20, 5))
+    plt.plot(xpos, y1, '-o')
+    plt.plot(xpos, y2, '-o')
+
+    if walls is not None:
+        walls_y = [min([np.min(y1), np.min(y2)]),
+                   max([np.max(y1), np.max(y2)])]
+        for w in walls:
+            plt.plot([w, w], walls_y, 'k--')
+
+    if show_fig:
+        plt.show()
+
+    return fig

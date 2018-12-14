@@ -1,4 +1,5 @@
 import sympy
+import sympy.physics
 
 
 # Momenta and positions
@@ -19,9 +20,9 @@ hbar, m0 = sympy.symbols("hbar, m_0")
 
 
 # ************** symbols **************
-g, kappa, q = sympy.symbols("g_c, kappa, q", commutative=False)
-u_b, Bx, By, Bz = sympy.symbols('mu_B, B_x, B_y, B_z', commutative=False)
-magnetic_symbols = Bx, By, Bz
+mu_b, g, kappa, q = sympy.symbols("mu_B, g_c, kappa, q", commutative=False)
+magnetic_symbols = Bx, By, Bz = sympy.symbols('B_x, B_y, B_z')
+
 
 
 # ************** Magnetic field Hamiltonian (Winkler form) **************
