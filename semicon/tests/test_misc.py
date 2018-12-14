@@ -1,6 +1,6 @@
 import numpy as np
 
-from kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
+from semicon.kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
 from semicon.misc import spin_matrices
 
 

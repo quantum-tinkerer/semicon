@@ -8,8 +8,7 @@ import sympy
 
 from semicon.misc import prettify, rotation_functionality_available
 from semicon.models import Model
-
-from kp_models import symbols
+from semicon.kp_models import symbols
 
 
 sigma_x = np.array(symbols.sigma_x.tolist(), dtype=complex)

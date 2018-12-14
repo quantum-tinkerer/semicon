@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import sys
 import imp
 import json
 import setuptools.command.develop
-from setuptools import setup
+from setuptools import setup, find_packages
+from importlib.util import module_from_spec, spec_from_file_location
 
 
 # Utility function to read the README file.
@@ -17,8 +19,6 @@ def read(fname):
 
 # Loads version.py module without importing the whole package.
 def get_version_and_cmdclass(package_path):
-    import os
-    from importlib.util import module_from_spec, spec_from_file_location
     spec = spec_from_file_location('version',
                                    os.path.join(package_path, '_version.py'))
     module = module_from_spec(spec)
@@ -28,11 +28,19 @@ def get_version_and_cmdclass(package_path):
 
 version, cmdclass = get_version_and_cmdclass('semicon')
 
+
+def import_submodule(path, name):
+    spec = spec_from_file_location(name, os.path.join(path, name + '.py'))
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def build_cache(dir):
         print('building model cache')
-        # importing 'kp_models' does work, so we do it here.
+        sys.path.append('semicon')
         from kp_models import explicit_foreman, explicit_zeeman
-
+        sys.path.pop()
         data = {
             'foreman': str(explicit_foreman.foreman),
             'zeeman': str(explicit_zeeman.zeeman),
@@ -86,8 +94,7 @@ setup(
     url="https://gitlab.kwant-project.org/semicon/semicon",
 
 
-    packages=['semicon', 'semicon.tests', 'semicon.kp_models'],
-    package_dir={'semicon.kp_models': 'kp_models'},
+    packages=find_packages('.'),
     package_data={'semicon': ['databank/*.yml']},
 
     setup_requires=['sympy >= 0.7.6'],

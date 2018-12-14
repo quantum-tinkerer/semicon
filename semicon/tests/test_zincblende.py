@@ -7,9 +7,9 @@ import sympy
 from semicon.models import ZincBlende
 from semicon.misc import prettify
 
-from kp_models.explicit_foreman import foreman as reference_foreman
-from kp_models.explicit_zeeman import zeeman as reference_zeeman
-from kp_models import symbols
+from semicon.kp_models.explicit_foreman import foreman as reference_foreman
+from semicon.kp_models.explicit_zeeman import zeeman as reference_zeeman
+from semicon.kp_models import symbols
 
 
 # Prepare reference Hamiltonian with proper commutivities
