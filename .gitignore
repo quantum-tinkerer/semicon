@@ -105,3 +105,4 @@ ENV/
 # this project
 kp_models/cache.json
 .pytest_cache
+semicon/model_cache.json

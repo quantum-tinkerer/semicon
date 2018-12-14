@@ -3,6 +3,7 @@
 import os
 import imp
 import json
+import setuptools.command.develop
 from setuptools import setup
 
 
@@ -27,13 +28,7 @@ def get_version_and_cmdclass(package_path):
 
 version, cmdclass = get_version_and_cmdclass('semicon')
 
-# Build model cache from 'kp_models' package
-class build_cache(cmdclass['build_py']):
-
-    def run(self):
-        # make sure we run the miniver stuff
-        super().run()
-
+def build_cache(dir):
         print('building model cache')
         # importing 'kp_models' does work, so we do it here.
         from kp_models import explicit_foreman, explicit_zeeman
@@ -42,13 +37,30 @@ class build_cache(cmdclass['build_py']):
             'foreman': str(explicit_foreman.foreman),
             'zeeman': str(explicit_zeeman.zeeman),
         }
-        cache_file = os.path.join(self.build_lib, 'semicon',
-                                  'model_cache.json')
+
+        cache_file = os.path.join(dir, 'semicon', 'model_cache.json')
         with open(cache_file, 'w') as f:
             json.dump(data, f)
 
 
-cmdclass['build_py'] = build_cache
+# Build model cache from 'kp_models' package
+class build_py(cmdclass['build_py']):
+
+    def run(self):
+        # make sure we run the miniver stuff
+        super().run()
+        build_cache(self.build_lib)
+
+
+class develop(setuptools.command.develop.develop):
+
+    def run(self):
+        super().run()
+        data = build_cache('.')
+
+
+cmdclass['build_py'] = build_py
+cmdclass['develop'] = develop
 
 classifiers = """\
     Development Status :: 3 - Alpha
