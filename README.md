@@ -3,7 +3,6 @@
 Note: this is work in progress, comments and ideas are more than welcomed!
 
 The goal of this package is to provide easy to use framwerok for performing k·p simulations.
-There will be two main components of this framework: parameters and models.
 
 This package is suppose to remove an overhead and a boiler plate that appears when doing the k·p simulations.
 It is suppose to make things easier, therefore userfriendly interface is a priority.
@@ -18,7 +17,7 @@ Users should be able to choose which components (Zeeman, Dresselhaus, strain, ..
 # Parameters
 
 Parameters bank should include most common semiconducting materials.
-Helper functions should handle parameter renormalization based on included bands and way to avoid spurious solutions.
+Helper methods should handle parameter renormalization based on included bands and way to avoid spurious solutions.
 
 
 # Helper functions
@@ -29,20 +28,42 @@ However, building the actual Kwant system and peforming the simulation should be
 
 # Requirements
 
-* This package is suppose to work with latest stable release of Kwant.
-* This package will require [SciPy 1.2](https://github.com/scipy/scipy/milestone/36) that is scheduled to be released in November 2018.
-This is due to usage of [scipy.spatial.transform.Rotation](https://scipy.github.io/devdocs/generated/scipy.spatial.transform.Rotation.html#scipy.spatial.transform.Rotation) to find the rotation vector of a given rotation matrix.
-* Because project is based on discretizer sympy is required, however, due to compatibility [issue](https://gitlab.kwant-project.org/kwant/kwant/issues/225) it must be in version lower than 1.2
+* This package is suppose to work with latest stable release of ``Kwant``.
+* This package depends on recently released ``SciPy 1.2`` for some of its optional functionality. It will work with earlier release but appropriate warning will be rendered.
+* Because project is based on discretizer sympy is required, however, due to compatibility [issue](https://gitlab.kwant-project.org/kwant/kwant/issues/225) it must be in version lower than 1.2. For now on the recommended version is 1.1.1.
 
 
-# Installation
+# Installation (from pip into conda environment)
+The easiest way to install ``semicon`` is to create fresh conda environment
+
+    conda env create --name semicon kwant=1.3.3 sympy=1.1.1
+
+and install ``semicon`` using ``pip``
+
+    conda activate semicon
+    pip install semicon
+
+
+to test your installation do
+
+    python -c 'import semicon; semicon.test()'
+
+
+Optionally, install Scipy 1.2 to benefit from ``rotation`` functionality.
+
+    pip install scipy==1.2
+
+
+
+# Building from sources
+
 As this package is pure python standard python installation from sources with
 ```
 python setup.py build
 python setup.py install
 ```
 should be working without problems.
-The only non-trivial dependency, Kwant, that could cause problemS if not installed beforehand can be either obtained via ``conda`` or any other installation means explained on its [homepage](https://kwant-project.org/).
+The only non-trivial dependency, Kwant, that could cause problems if not installed beforehand can be either obtained via ``conda`` or any other installation means explained on its [homepage](https://kwant-project.org/).
 
 Direct installation from git is also possible (and favoured as long as conda
 package is not out there):
@@ -53,7 +74,7 @@ pip install git+https://gitlab.kwant-project.org/semicon/semicon.git
 Note that due to active development master branch may not be stable.
 To install version that has been already used in research project use
 ```
-pip install git+https://gitlab.kwant-project.org/semicon/semicon.git@v0.1.0
+pip install git+https://gitlab.kwant-project.org/semicon/semicon.git@v0.2.0
 ```
 
 
