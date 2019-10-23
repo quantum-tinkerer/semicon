@@ -1,0 +1,19 @@
+name: semicon-latest
+channels:
+    - conda-forge
+dependencies:
+    - python=3.7
+    - numpy
+    - scipy
+    - kwant
+    - sympy
+    - pandas
+    - tinyarray
+    - pyyaml
+    ## Dev Dependencies
+    # Testing
+    - pytest
+    - pytest-cov
+    - pytest-flakes
+    - pytest-pep8
+

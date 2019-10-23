@@ -1,36 +1,35 @@
-image: kwant/testing
+image: quantumtinkerer/research
 
-stages:
-  - test
+## Documentation for the format of this file can be found here:
+## https://docs.gitlab.com/ce/ci/yaml/README.html#configuration-of-your-builds-with-gitlab-ci-yml
 
-test package:
-  stage: test
+test build:
+  stage: build
+  script: python setup.py develop
+  artifacts:
+    paths:
+      - semicon/model_cache.json
+    expire_in: 2 hour
+
+test stable requirements:
   script:
-    - pip3 install sympy==1.1.1
-    - pip3 install -e .
-    - py.test -r w --cov semicon --cov-report term --flakes semicon
-
-
-test package with latest scipy:
+    - conda env create -f docker/semicon-stable.yml
+    - source activate semicon-stable
+    - py.test semicon/ --cov=semicon --verbose --cov-report term
   stage: test
+
+test latest requirements:
   script:
-    - pip3 install sympy==1.1.1 scipy==1.2.0rc2
-    - pip3 install -e .
-    - py.test -r w --cov semicon --cov-report term --flakes semicon
-
-
-test package with latest SymPy and Kwant stable:
+    - conda env create -f docker/semicon-latest.yml
+    - source activate semicon-latest
+    - py.test semicon/ --cov=semicon --verbose --cov-report term
   stage: test
-  script:
-    - pip3 install sympy
-    - pip3 install git+https://gitlab.kwant-project.org/kwant/kwant.git@stable
-    - pip3 install -e .
-    - py.test -r w --cov semicon --cov-report term --flakes semicon
 
 test packaging:
-  stage: test
   script:
-    - pip3 install sympy==1.1.1
-    - pip3 install .
+    - conda env create -f docker/semicon-stable.yml
+    - source activate semicon-stable
+    - python setup.py install
     - cd /  # make sure we don't import the cloned version
-    - python3 -c 'import semicon; semicon.test()'
+    - python -c 'import semicon; semicon.test()'
+  stage: test

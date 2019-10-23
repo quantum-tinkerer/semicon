@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import imp
 import json
 import setuptools.command.develop
 from setuptools import setup, find_packages
@@ -97,9 +96,15 @@ setup(
     packages=find_packages('.'),
     package_data={'semicon': ['databank/*.yml']},
 
-    setup_requires=['sympy >= 0.7.6'],
-    install_requires=['pyyaml', 'scipy >= 0.17', 'kwant >= 1.3',
-                      'sympy >= 1.1.1', 'pandas >= 0.19.2'],
+    setup_requires=['sympy >= 1.2'],
+    install_requires=[
+        'sympy >= 1.2',
+        'scipy >= 1.1.0',
+        'pandas >= 0.23.3',
+        'numpy >= 1.14.5',
+        'kwant >= 1.4',
+        'pyyaml'
+    ],
     classifiers=[c.strip() for c in classifiers.split('\n')],
     cmdclass=cmdclass,
 )

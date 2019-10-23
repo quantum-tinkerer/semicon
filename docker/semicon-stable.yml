@@ -1,0 +1,18 @@
+name: semicon-stable
+channels:
+    - conda-forge
+dependencies:
+    - python=3.5
+    - numpy=1.13
+    - scipy=0.19
+    - kwant
+    - sympy=1.1
+    - pandas
+    - tinyarray
+    - pyyaml
+    ## Dev Dependencies
+    # Testing
+    - pytest
+    - pytest-cov
+    - pytest-flakes
+    - pytest-pep8
