@@ -54,7 +54,6 @@ Optionally, install Scipy 1.2 to benefit from ``rotation`` functionality.
     pip install scipy==1.2
 
 
-
 # Building from sources
 
 As this package is pure python standard python installation from sources with
@@ -76,6 +75,15 @@ To install version that has been already used in research project use
 ```
 pip install git+https://gitlab.kwant-project.org/semicon/semicon.git@v0.2.0
 ```
+
+# Development
+
+We use [`pre-commit`](https://pre-commit.com) to keep a consistent code style, so ``pip install pre_commit`` and run
+```bash
+pre-commit install
+```
+to install the hooks.
+These will then automatically run upon each commit.
 
 
 # Tips about developing inside docker container
