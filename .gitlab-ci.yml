@@ -13,8 +13,8 @@ test build:
 
 test linting:
   script:
-    - conda env create -f docker/semicon-stable.yml
-    - source activate semicon-stable
+    - conda env create -f docker/semicon-latest.yml
+    - source activate semicon-latest
     - pre-commit install
     - pre-commit run --all
   stage: test
