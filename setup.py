@@ -80,6 +80,7 @@ classifiers = """\
 setup(
     name="semicon",
     version=version,
+    python_requires=">=3.6",
     author="R.J. Skolasinski",
     author_email="r.j.skolasinski@gmail.com",
     description=("Package for simulating quantum mechanical k·p Hamiltonians"),
