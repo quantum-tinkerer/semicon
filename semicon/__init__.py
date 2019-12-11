@@ -1,6 +1,6 @@
-import models
-import parameters
-import peierls
+from . import models
+from . import parameters
+from . import peierls
 
 from ._version import __version__
 
