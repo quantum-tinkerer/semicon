@@ -26,45 +26,75 @@ magnetic_symbols = Bx, By, Bz = sympy.symbols("B_x, B_y, B_z")
 
 # ************** Magnetic field Hamiltonian (Winkler form) **************
 
-Tx = 1 / (3 * sqrt(2)) * Matrix([[-sqrt(3), 0, 1, 0], [0, -1, 0, sqrt(3)]])
+# Turn off black formatting to visually compare the matrices to a text book source
+# fmt: off
+Tx = 1 / (3 * sqrt(2)) * Matrix(
+    [[-sqrt(3), 0, 1, 0],
+     [0, -1, 0, sqrt(3)]]
+)
 
-Ty = -sympy.I / (3 * sqrt(2)) * Matrix([[sqrt(3), 0, 1, 0], [0, 1, 0, sqrt(3)]])
+Ty = -sympy.I / (3 * sqrt(2)) * Matrix(
+    [[sqrt(3), 0, 1, 0],
+     [0, 1, 0, sqrt(3)]]
+)
 
-Tz = sqrt(2) / 3 * Matrix([[0, 1, 0, 0], [0, 0, 1, 0]])
+Tz = sqrt(2) / 3 * Matrix(
+    [[0, 1, 0, 0],
+     [0, 0, 1, 0]]
+)
 
+Txx = 1 / (3 * sqrt(2)) * Matrix(
+    [[0, -1, 0, sqrt(3)],
+     [-sqrt(3), 0, 1, 0]]
+)
 
-Txx = 1 / (3 * sqrt(2)) * Matrix([[0, -1, 0, sqrt(3)], [-sqrt(3), 0, 1, 0]])
+Tyy = 1 / (3 * sqrt(2)) * Matrix(
+    [[0, -1, 0, -sqrt(3)],
+     [sqrt(3), 0, 1, 0]]
+)
 
-Tyy = 1 / (3 * sqrt(2)) * Matrix([[0, -1, 0, -sqrt(3)], [sqrt(3), 0, 1, 0]])
+Tzz = sqrt(2) / 3 * Matrix(
+    [[0, 1, 0, 0],
+     [0, 0, -1, 0]]
+)
 
-Tzz = sqrt(2) / 3 * Matrix([[0, 1, 0, 0], [0, 0, -1, 0]])
+Tyz = sympy.I / (2 * sqrt(6)) * Matrix(
+    [[-1, 0, -sqrt(3), 0],
+     [0, sqrt(3), 0, 1]]
+)
 
-Tyz = sympy.I / (2 * sqrt(6)) * Matrix([[-1, 0, -sqrt(3), 0], [0, sqrt(3), 0, 1]])
+Tzx = 1 / (2 * sqrt(6)) * Matrix(
+    [[-1, 0, sqrt(3), 0],
+     [0, sqrt(3), 0, -1]]
+)
 
-Tzx = 1 / (2 * sqrt(6)) * Matrix([[-1, 0, sqrt(3), 0], [0, sqrt(3), 0, -1]])
-
-Txy = sympy.I / sqrt(6) * Matrix([[0, 0, 0, -1], [-1, 0, 0, 0]])
-
-sigma_0 = sympy.eye(2)
-sigma_x = sympy.physics.matrices.msigma(1)
-sigma_y = sympy.physics.matrices.msigma(2)
-sigma_z = sympy.physics.matrices.msigma(3)
+Txy = sympy.I / sqrt(6) * Matrix(
+    [[0, 0, 0, -1],
+     [-1, 0, 0, 0]]
+)
 
 Jx = sympy.Rational(1, 2) * Matrix(
-    [[0, sqrt(3), 0, 0], [sqrt(3), 0, 2, 0], [0, 2, 0, sqrt(3)], [0, 0, sqrt(3), 0]]
+    [[0, sqrt(3), 0, 0],
+     [sqrt(3), 0, 2, 0],
+     [0, 2, 0, sqrt(3)],
+     [0, 0, sqrt(3), 0]]
 )
 
 Jy = (
     sympy.I
     * sympy.Rational(1, 2)
     * Matrix(
-        [
-            [0, -sqrt(3), 0, 0],
-            [sqrt(3), 0, -2, 0],
-            [0, 2, 0, -sqrt(3)],
-            [0, 0, sqrt(3), 0],
-        ]
+        [[0, -sqrt(3), 0, 0],
+         [sqrt(3), 0, -2, 0],
+         [0, 2, 0, -sqrt(3)],
+         [0, 0, sqrt(3), 0]]
     )
 )
+# fmt: on
 
 Jz = sympy.Rational(1, 2) * sympy.diag(3, 1, -1, -3)
+
+sigma_0 = sympy.eye(2)
+sigma_x = sympy.physics.matrices.msigma(1)
+sigma_y = sympy.physics.matrices.msigma(2)
+sigma_z = sympy.physics.matrices.msigma(3)
