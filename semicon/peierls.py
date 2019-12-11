@@ -2,10 +2,10 @@ import sympy
 import kwant
 
 
-a = sympy.symbols('a')
-phi_0 = sympy.symbols('phi_0')
-ri = sympy.symbols('x_i y_i z_i')
-rj = sympy.symbols('x_j y_j z_j')
+a = sympy.symbols("a")
+phi_0 = sympy.symbols("phi_0")
+ri = sympy.symbols("x_i y_i z_i")
+rj = sympy.symbols("x_j y_j z_j")
 
 
 def get_phase(A):
@@ -27,11 +27,13 @@ def get_phase(A):
     xi, yi, zi = ri
     xj, yj, zj = rj
 
-    t = sympy.symbols('_t_internal_for_integration')
+    t = sympy.symbols("_t_internal_for_integration")
 
-    subs = {x: (1 - t) * xi + t * xj,
-            y: (1 - t) * yi + t * yj,
-            z: (1 - t) * zi + t * zj}
+    subs = {
+        x: (1 - t) * xi + t * xj,
+        y: (1 - t) * yi + t * yj,
+        z: (1 - t) * zi + t * zj,
+    }
 
     output = [xj - xi, yj - yi, zj - zi]
     for i, Ai in enumerate(A):
@@ -66,7 +68,7 @@ def apply(tb_hamiltonian, coords, *, A, signs=None):
     tb_hamiltonian = tb_hamiltonian.copy()
 
     if not isinstance(A, str):
-        raise ValueError('Vector potential should be a string.')
+        raise ValueError("Vector potential should be a string.")
 
     phase_ij = get_phase(A)
     if signs:

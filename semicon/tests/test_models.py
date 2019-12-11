@@ -30,49 +30,67 @@ def isclose(a, b):
 
 # Baisc model tests
 
-@pytest.mark.parametrize('ham_str', [
-    "A_x * k_x**2 + A_y * k_y**2",
-    "A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2",
-])
+
+@pytest.mark.parametrize(
+    "ham_str",
+    ["A_x * k_x**2 + A_y * k_y**2", "A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2",],
+)
 def test_model_creation(ham_str):
     smp = kwant.continuum.sympify(ham_str)
     assert smp == Model(ham_str).hamiltonian
     assert smp == Model(smp).hamiltonian
 
-    locals = {'A_x': 1, 'A_y': 2}
+    locals = {"A_x": 1, "A_y": 2}
     smp = kwant.continuum.sympify(ham_str, locals=locals)
     assert smp == Model(ham_str, locals=locals).hamiltonian
 
 
-@pytest.mark.parametrize('str_input, str_output, decimals', [
-    ("0.12345 * k_x**2", "0.123 * k_x**2", 3),
-    ("0.12345 * k_x**2 * sigma_z", "0.123 * k_x**2 * sigma_z", 3),
-    ("0.12345 * k_x**2", "0.1234 * k_x**2", 4),
-    ("0.12345 * k_x**2 * sigma_z", "0.1234 * k_x**2 * sigma_z", 4),
-])
+@pytest.mark.parametrize(
+    "str_input, str_output, decimals",
+    [
+        ("0.12345 * k_x**2", "0.123 * k_x**2", 3),
+        ("0.12345 * k_x**2 * sigma_z", "0.123 * k_x**2 * sigma_z", 3),
+        ("0.12345 * k_x**2", "0.1234 * k_x**2", 4),
+        ("0.12345 * k_x**2 * sigma_z", "0.1234 * k_x**2 * sigma_z", 4),
+    ],
+)
 def test_prettify_decimals(str_input, str_output, decimals):
     m = Model(str_input).prettify(decimals=decimals)
     assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
 
 
-@pytest.mark.parametrize('str_input, str_output, zero_atol', [
-    ("1.123e-3 * k_x**2 + 5", "1.123e-3 * k_x**2 + 5", 1e-4),
-    ("1.123e-3 * k_x**2 + 5", "5", 1e-2),
-    ("(1.123e-3 * k_x**2 + 5) * sigma_z", "(1.123e-3 * k_x**2 + 5) * sigma_z", 1e-4),
-    ("(1.123e-3 * k_x**2 + 5) * sigma_z", "5 * sigma_z", 1e-2),
-])
+@pytest.mark.parametrize(
+    "str_input, str_output, zero_atol",
+    [
+        ("1.123e-3 * k_x**2 + 5", "1.123e-3 * k_x**2 + 5", 1e-4),
+        ("1.123e-3 * k_x**2 + 5", "5", 1e-2),
+        (
+            "(1.123e-3 * k_x**2 + 5) * sigma_z",
+            "(1.123e-3 * k_x**2 + 5) * sigma_z",
+            1e-4,
+        ),
+        ("(1.123e-3 * k_x**2 + 5) * sigma_z", "5 * sigma_z", 1e-2),
+    ],
+)
 def test_prettify_zero_atol(str_input, str_output, zero_atol):
     m = Model(str_input).prettify(zero_atol=zero_atol)
     assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
 
 
-@pytest.mark.parametrize('str_input, str_output, nsimplify', [
-    ("1.7320508075688772 * k_x**2", "1.7320508075688772 * k_x**2", False),
-    ("1.7320508075688772 * k_x**2", "sqrt(3) * k_x**2", True),
-    ("1.7320508075688772 * k_x**2 + 5", "sqrt(3) * k_x**2 + 5", True),
-    ("1.7320508075688772 * k_x**2 * sigma_z", "1.7320508075688772 * k_x**2 * sigma_z", False),
-    ("1.7320508075688772 * k_x**2 * sigma_z", "sqrt(3) * k_x**2 * sigma_z", True),
-])
+@pytest.mark.parametrize(
+    "str_input, str_output, nsimplify",
+    [
+        ("1.7320508075688772 * k_x**2", "1.7320508075688772 * k_x**2", False),
+        ("1.7320508075688772 * k_x**2", "sqrt(3) * k_x**2", True),
+        ("1.7320508075688772 * k_x**2 + 5", "sqrt(3) * k_x**2 + 5", True),
+        (
+            "1.7320508075688772 * k_x**2 * sigma_z",
+            "1.7320508075688772 * k_x**2 * sigma_z",
+            False,
+        ),
+        ("1.7320508075688772 * k_x**2 * sigma_z", "sqrt(3) * k_x**2 * sigma_z", True),
+    ],
+)
 def test_prettify_zero_nsimplify(str_input, str_output, nsimplify):
     m = Model(str_input).prettify(nsimplify=nsimplify)
     assert isclose(m.hamiltonian, Model(str_output).hamiltonian)
@@ -80,15 +98,15 @@ def test_prettify_zero_nsimplify(str_input, str_output, nsimplify):
 
 # Test rotation functionality
 
+
 def test_spin_operators():
-    model = Model("A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2", spins=1/2)
+    model = Model("A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2", spins=1 / 2)
     S = 0.5 * np.array([sigma_x, sigma_y, sigma_z])
     assert np.allclose(model.spin_operators, S)
 
 
-R = np.array([[0, -1, 0],
-              [+1, 0, 0],
-              [0, 0, 1]])
+R = np.array([[0, -1, 0], [+1, 0, 0], [0, 0, 1]])
+
 
 def test_rotation():
     """Test rotation procedure.
@@ -105,12 +123,11 @@ def test_rotation():
         from scipy.spatial.transform import Rotation
 
     tmp_str = "alpha_{0} * k_{0} * sigma_{0}"
-    ham_str = " + ".join(tmp_str.format(s) for s in ['x', 'y', 'z'])
-    sx, sy, sz = sympy.symbols('sigma_x sigma_y sigma_z')
-
+    ham_str = " + ".join(tmp_str.format(s) for s in ["x", "y", "z"])
+    sx, sy, sz = sympy.symbols("sigma_x sigma_y sigma_z")
 
     ham1 = kwant.continuum.sympify(
-        ham_str, locals={'sigma_x': sx, 'sigma_y': sy, 'sigma_z': sz}
+        ham_str, locals={"sigma_x": sx, "sigma_y": sy, "sigma_z": sz}
     )
 
     ham2 = kwant.continuum.sympify(ham_str)
@@ -120,7 +137,7 @@ def test_rotation():
     get_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
     subs = {
         **get_subs(R, sympy.Matrix(kwant.continuum.momentum_operators)),
-        **get_subs(R, sympy.Matrix([sx, sy, sz]))
+        **get_subs(R, sympy.Matrix([sx, sy, sz])),
     }
 
     n = Rotation.from_dcm(R).as_rotvec()
@@ -136,4 +153,4 @@ def test_rotation():
     b = kwant.continuum.sympify(str(ham2_rotated)).expand()
 
     assert isclose(a, b)
-    assert isclose(a, Model(ham_str, spins=1/2).rotate(R).hamiltonian)
+    assert isclose(a, Model(ham_str, spins=1 / 2).rotate(R).hamiltonian)

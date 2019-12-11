@@ -69,28 +69,28 @@ def get_foreman():
     molenkamp_basis = [
         kr(up, S),
         kr(dw, S),
-        +(1/sympy.sqrt(2)) * kr(up, X + sympy.I * Y),
-        +(1/sympy.sqrt(6)) * (kr(dw, X + sympy.I * Y) - kr(up, 2*Z)),
-        -(1/sympy.sqrt(6)) * (kr(up, X - sympy.I * Y) + kr(dw, 2*Z)),
-        -(1/sympy.sqrt(2)) * kr(dw, X - sympy.I * Y),
-        +(1/sympy.sqrt(3)) * (kr(dw, X + sympy.I * Y) + kr(up, Z)),
-        +(1/sympy.sqrt(3)) * (kr(up, X - sympy.I * Y) - kr(dw, Z))
+        +(1 / sympy.sqrt(2)) * kr(up, X + sympy.I * Y),
+        +(1 / sympy.sqrt(6)) * (kr(dw, X + sympy.I * Y) - kr(up, 2 * Z)),
+        -(1 / sympy.sqrt(6)) * (kr(up, X - sympy.I * Y) + kr(dw, 2 * Z)),
+        -(1 / sympy.sqrt(2)) * kr(dw, X - sympy.I * Y),
+        +(1 / sympy.sqrt(3)) * (kr(dw, X + sympy.I * Y) + kr(up, Z)),
+        +(1 / sympy.sqrt(3)) * (kr(up, X - sympy.I * Y) - kr(dw, Z)),
     ]
 
     subs_notation = {
         Ec: Ev + E0,
-        L: -(g1 + 4 * g2) * (hbar**2/2/m0),
-        M: -(g1 - 2 * g2) * (hbar**2/2/m0),
-        Np: -(3 * g3 + (3 * kappa + 1)) * (hbar**2/2/m0),
-        Nm: -(3 * g3 - (3 * kappa + 1)) * (hbar**2/2/m0),
-        Ac: (g0 * hbar**2/2/m0)
+        L: -(g1 + 4 * g2) * (hbar ** 2 / 2 / m0),
+        M: -(g1 - 2 * g2) * (hbar ** 2 / 2 / m0),
+        Np: -(3 * g3 + (3 * kappa + 1)) * (hbar ** 2 / 2 / m0),
+        Nm: -(3 * g3 - (3 * kappa + 1)) * (hbar ** 2 / 2 / m0),
+        Ac: (g0 * hbar ** 2 / 2 / m0),
     }
 
     Hs = spin_orbit()
 
-    Hcc = sympy.Matrix([Ec + kx*Ac*kx + ky*Ac*ky + kz*Ac*kz])
-    Hcv = +sympy.I * sympy.Matrix([[P*kx, P*ky, P*kz]])
-    Hvc = -sympy.I * sympy.Matrix([kx*P, ky*P, kz*P])
+    Hcc = sympy.Matrix([Ec + kx * Ac * kx + ky * Ac * ky + kz * Ac * kz])
+    Hcv = +sympy.I * sympy.Matrix([[P * kx, P * ky, P * kz]])
+    Hvc = -sympy.I * sympy.Matrix([kx * P, ky * P, kz * P])
 
     data = [[valence_term(i, j) for j in range(3)] for i in range(3)]
     Hvv = sympy.Matrix(data)
@@ -102,10 +102,9 @@ def get_foreman():
     U_dag = sympy.Matrix(sympy.BlockMatrix([molenkamp_basis]))
     U = dag(U_dag)
 
-    hamiltonian = (U * H8 * dag(U))
+    hamiltonian = U * H8 * dag(U)
     hamiltonian = hamiltonian.subs(subs_notation)
-    hamiltonian = (hamiltonian + (Ev - Delta / 3) *
-                   sympy.diag(0, 0, 1, 1, 1, 1, 1, 1))
+    hamiltonian = hamiltonian + (Ev - Delta / 3) * sympy.diag(0, 0, 1, 1, 1, 1, 1, 1)
     return sympy.ImmutableMatrix(hamiltonian.expand())
 
 

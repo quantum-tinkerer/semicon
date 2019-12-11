@@ -12,10 +12,14 @@ from scipy.interpolate import interp1d
 
 try:
     from scipy.spatial.transform import Rotation
+
     rotation_functionality_available = True
 except ImportError:
-    warnings.warn("Rotation functionality not availble unless "
-                  "scipy 1.2 or greater is installed", RuntimeWarning)
+    warnings.warn(
+        "Rotation functionality not availble unless "
+        "scipy 1.2 or greater is installed",
+        RuntimeWarning,
+    )
     rotation_functionality_available = False
 
 import sympy
@@ -26,11 +30,11 @@ from .symbols import momentum
 
 def spin_matrices(s):
     """Construct spin-s matrices for any spin."""
-    d = np.round(2*s + 1)
+    d = np.round(2 * s + 1)
     if not np.isclose(d, int(d)):
         raise ValueError("Argument 's' must be integer or half integer.")
     d = int(d)
-    Sz = 1/2 * np.diag(np.arange(d - 1, -d, -2))
+    Sz = 1 / 2 * np.diag(np.arange(d - 1, -d, -2))
     # first diagonal for general s from en.wikipedia.org/wiki/Spin_(physics)
     diag = [(1 / 2) * np.sqrt(2 * i * (s + 1) - i * (i + 1)) for i in np.arange(1, d)]
     Sx = np.diag(diag, k=1) + np.diag(diag, k=-1)
@@ -97,8 +101,9 @@ def _validate_rotation_matrix(R):
     elif isinstance(R, sympy.matrices.MatrixBase):
         det = R.det()
     else:
-        raise ValueError("rotation matrix should be defined as np.array or "
-                         "sympy.Matrix")
+        raise ValueError(
+            "rotation matrix should be defined as np.array or " "sympy.Matrix"
+        )
 
     if not np.allclose(float(det), 1):
         raise ValueError("Determinant of rotation matrix must be 1.")
@@ -114,8 +119,10 @@ def _basis_rotation(R, spin_operators):
 
 def rotate(expr, R, act_on=momentum, spin_operators=None):
     if not rotation_functionality_available:
-        raise RuntimeError("Rotation functionality not availble. Please, "
-                           "install scipy 1.2 or greater.")
+        raise RuntimeError(
+            "Rotation functionality not availble. Please, "
+            "install scipy 1.2 or greater."
+        )
 
     _validate_rotation_matrix(R)
     rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
@@ -137,10 +144,10 @@ def rotate(expr, R, act_on=momentum, spin_operators=None):
     return expr.expand()
 
 
-
 # Function defined in this section come from "kwant.continuum" module
 # of Kwant and are currently a part of a non-public API.
 # To avoid breakage with future releases, they are defined here.
+
 
 def make_commutative(expr, *symbols):
     """Make sure that specified symbols are defined as commutative.
@@ -229,7 +236,6 @@ def _expression_monomials(expr, gens):
     return dict(output)
 
 
-
 ### Helper functions, to be replaced with something better...
 def two_deg(parameters, widths, grid_spacing, extra_constants=None):
     """Get parameter functions for a specified 2D heterostructure.
@@ -259,19 +265,32 @@ def two_deg(parameters, widths, grid_spacing, extra_constants=None):
         return walls
 
     def interp_sn_params(a, walls, values, parameter_name):
-        xs = [x + d for x in walls[1:-1] for d in [-a/2, +a/2]]
+        xs = [x + d for x in walls[1:-1] for d in [-a / 2, +a / 2]]
         xs = [walls[0]] + xs + [walls[-1]]
         ys = [p[parameter_name] for p in values for i in range(2)]
-        return interp1d(xs, ys, fill_value='extrapolate')
+        return interp1d(xs, ys, fill_value="extrapolate")
 
     # Varied parameters should probably be a union of available k·p parameters
-    varied_parameters = ['E_0', 'E_v', 'Delta_0', 'P', 'kappa', 'g_c', 'q',
-                         'gamma_0', 'gamma_1', 'gamma_2', 'gamma_3']
+    varied_parameters = [
+        "E_0",
+        "E_v",
+        "Delta_0",
+        "P",
+        "kappa",
+        "g_c",
+        "q",
+        "gamma_0",
+        "gamma_1",
+        "gamma_2",
+        "gamma_3",
+    ]
 
     walls = get_walls(grid_spacing, widths)
 
-    output = {par: interp_sn_params(grid_spacing, walls, parameters, par)
-              for par in varied_parameters}
+    output = {
+        par: interp_sn_params(grid_spacing, walls, parameters, par)
+        for par in varied_parameters
+    }
 
     if extra_constants is not None:
         output.update(extra_constants)
@@ -283,18 +302,18 @@ def two_deg(parameters, widths, grid_spacing, extra_constants=None):
 def plot_2deg_bandedges(two_deg_params, xpos, walls=None, show_fig=False):
     """Plot band edges."""
     import matplotlib.pyplot as plt
-    y1 = two_deg_params['E_v'](xpos)
-    y2 = y1 + two_deg_params['E_0'](xpos)
+
+    y1 = two_deg_params["E_v"](xpos)
+    y2 = y1 + two_deg_params["E_0"](xpos)
 
     fig = plt.figure(figsize=(20, 5))
-    plt.plot(xpos, y1, '-o')
-    plt.plot(xpos, y2, '-o')
+    plt.plot(xpos, y1, "-o")
+    plt.plot(xpos, y2, "-o")
 
     if walls is not None:
-        walls_y = [min([np.min(y1), np.min(y2)]),
-                   max([np.max(y1), np.max(y2)])]
+        walls_y = [min([np.min(y1), np.min(y2)]), max([np.max(y1), np.max(y2)])]
         for w in walls:
-            plt.plot([w, w], walls_y, 'k--')
+            plt.plot([w, w], walls_y, "k--")
 
     if show_fig:
         plt.show()
