@@ -61,7 +61,7 @@ class DataBank(UserDict):
 
         # Read parameters from file
         with open(fpath, 'r') as f:
-            for name, data in yaml.load(f.read()).items():
+            for name, data in yaml.safe_load(f.read()).items():
                 self.data[name] = data['parameters']
 
     def __str__(self):
