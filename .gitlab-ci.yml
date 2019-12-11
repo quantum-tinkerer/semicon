@@ -15,6 +15,7 @@ test linting:
   script:
     - conda env create -f docker/semicon-latest.yml
     - source activate semicon-latest
+    - mkdir ~/pre-commit && export PRE_COMMIT_HOME=/home/jovyan/pre-commit
     - pre-commit install
     - pre-commit run --all
   stage: test
