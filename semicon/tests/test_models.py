@@ -102,7 +102,7 @@ def test_spin_operators():
     assert np.allclose(model.spin_operators, S)
 
 
-R = np.array([[0, -1, 0], [+1, 0, 0], [0, 0, 1]])
+R = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
 
 
 def test_rotation():
