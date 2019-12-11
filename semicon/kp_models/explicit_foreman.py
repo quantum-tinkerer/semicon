@@ -21,9 +21,9 @@ import sympy.physics
 from sympy.physics.quantum import TensorProduct as kr
 
 from .symbols import (
+    E0,
     Ac,
     Delta,
-    E0,
     Ec,
     Ev,
     L,
@@ -80,7 +80,9 @@ def spin_orbit():
 
 def get_foreman():
     # Basis transformation
-    v_n = lambda i, N: sympy.Matrix([1 if i == n else 0 for n in range(N)])
+    v_n = lambda i, N: sympy.Matrix(  # noqa: E731
+        [1 if i == n else 0 for n in range(N)]
+    )
     S, X, Y, Z = [v_n(i, 4) for i in range(4)]
     up, dw = [v_n(i, 2) for i in range(2)]
 
@@ -120,7 +122,7 @@ def get_foreman():
     H4 = sympy.BlockMatrix([[Hcc, Hcv], [Hvc, Hvv]])
     H8 = sympy.Matrix(sympy.BlockDiagMatrix(H4, H4)) + Hs
 
-    dag = lambda x: x.conjugate().transpose()
+    dag = lambda x: x.conjugate().transpose()  # noqa: E731
     U_dag = sympy.Matrix(sympy.BlockMatrix([molenkamp_basis]))
     U = dag(U_dag)
 

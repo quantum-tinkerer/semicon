@@ -123,7 +123,9 @@ def rotate(expr, R, act_on=momentum, spin_operators=None):
         )
 
     _validate_rotation_matrix(R)
-    rotation_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
+    rotation_subs = lambda R, v: {  # noqa: E731
+        cprime: c for (cprime, c) in zip(v, R @ v)
+    }
 
     subs = {}
     for row in np.atleast_2d(act_on):

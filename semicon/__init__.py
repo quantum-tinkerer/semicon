@@ -1,12 +1,8 @@
-__all__ = []
+import models
+import parameters
+import peierls
 
 from ._version import __version__
-
-__all__.append("__version__")
-
-for module in ["parameters", "models", "peierls"]:
-    exec(f"from . import {module}")
-    __all__.append(module)
 
 
 def test(verbose=True):
@@ -19,3 +15,5 @@ def test(verbose=True):
 
 
 test.__test__ = False
+
+__all__ = ["parameters", "models", "peierls", "__version__"]

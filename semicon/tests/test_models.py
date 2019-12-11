@@ -30,7 +30,7 @@ def isclose(a, b):
 
 @pytest.mark.parametrize(
     "ham_str",
-    ["A_x * k_x**2 + A_y * k_y**2", "A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2",],
+    ["A_x * k_x**2 + A_y * k_y**2", "A_x * sigma_x * k_x**2 + A_y * sigma_y * k_y**2"],
 )
 def test_model_creation(ham_str):
     smp = kwant.continuum.sympify(ham_str)
@@ -123,7 +123,7 @@ def test_rotation():
     ham_str = " + ".join(tmp_str.format(s) for s in ["x", "y", "z"])
     sx, sy, sz = sympy.symbols("sigma_x sigma_y sigma_z")
 
-    ham1 = kwant.continuum.sympify(
+    ham1 = kwant.continuum.sympify(  # noqa: E731
         ham_str, locals={"sigma_x": sx, "sigma_y": sy, "sigma_z": sz}
     )
 
@@ -131,7 +131,7 @@ def test_rotation():
 
     S = 0.5 * np.array([sigma_x, sigma_y, sigma_z])
 
-    get_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}
+    get_subs = lambda R, v: {cprime: c for (cprime, c) in zip(v, R @ v)}  # noqa: E731
     subs = {
         **get_subs(R, sympy.Matrix(kwant.continuum.momentum_operators)),
         **get_subs(R, sympy.Matrix([sx, sy, sz])),

@@ -6,7 +6,6 @@ import os
 import kwant.continuum
 import numpy as np
 import scipy.linalg as la
-
 # from IPython import display
 import sympy
 

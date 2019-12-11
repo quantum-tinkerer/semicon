@@ -61,7 +61,7 @@ class build_py(cmdclass["build_py"]):
 class develop(setuptools.command.develop.develop):
     def run(self):
         super().run()
-        data = build_cache(".")
+        build_cache(".")
 
 
 cmdclass["build_py"] = build_py
