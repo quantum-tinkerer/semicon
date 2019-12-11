@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import json
 import os
 import sys
-import json
-import setuptools.command.develop
-from setuptools import setup, find_packages
 from importlib.util import module_from_spec, spec_from_file_location
+
+import setuptools.command.develop
+from setuptools import find_packages, setup
 
 
 # Utility function to read the README file.

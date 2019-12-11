@@ -1,7 +1,7 @@
 import collections
-import pytest
 
 import pandas as pd
+import pytest
 
 from semicon.parameters import DataBank
 

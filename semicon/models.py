@@ -3,17 +3,16 @@ import copy
 import json
 import os
 
+import kwant.continuum
 import numpy as np
 import scipy.linalg as la
 
 # from IPython import display
 import sympy
 
-import kwant.continuum
-
-from .misc import spin_matrices, rotate, prettify
-from .symbols import momentum
 from . import parameters
+from .misc import prettify, rotate, spin_matrices
+from .symbols import momentum
 
 
 # Read the cache

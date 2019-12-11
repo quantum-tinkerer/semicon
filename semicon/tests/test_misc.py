@@ -1,8 +1,7 @@
 import numpy as np
 
-from semicon.kp_models.symbols import sigma_x, sigma_y, sigma_z, Jx, Jy, Jz
+from semicon.kp_models.symbols import Jx, Jy, Jz, sigma_x, sigma_y, sigma_z
 from semicon.misc import spin_matrices
-
 
 sigma_x = np.array(sigma_x.tolist(), dtype=complex)
 sigma_y = np.array(sigma_y.tolist(), dtype=complex)

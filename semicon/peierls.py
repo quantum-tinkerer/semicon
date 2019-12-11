@@ -1,6 +1,5 @@
-import sympy
 import kwant
-
+import sympy
 
 a = sympy.symbols("a")
 phi_0 = sympy.symbols("phi_0")

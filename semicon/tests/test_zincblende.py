@@ -1,16 +1,12 @@
-import pytest
-
-
 import kwant.continuum
+import pytest
 import sympy
 
-from semicon.models import ZincBlende
-from semicon.misc import prettify
-
+from semicon.kp_models import symbols
 from semicon.kp_models.explicit_foreman import foreman as reference_foreman
 from semicon.kp_models.explicit_zeeman import zeeman as reference_zeeman
-from semicon.kp_models import symbols
-
+from semicon.misc import prettify
+from semicon.models import ZincBlende
 
 # Prepare reference Hamiltonian with proper commutivities
 varied_parameters = [

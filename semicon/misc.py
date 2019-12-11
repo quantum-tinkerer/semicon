@@ -3,12 +3,15 @@
 
 
 import warnings
-
-import numpy as np
-import scipy.linalg as la
 from collections import defaultdict
 
+import kwant.continuum
+import numpy as np
+import scipy.linalg as la
+import sympy
 from scipy.interpolate import interp1d
+
+from .symbols import momentum
 
 try:
     from scipy.spatial.transform import Rotation
@@ -21,11 +24,6 @@ except ImportError:
         RuntimeWarning,
     )
     rotation_functionality_available = False
-
-import sympy
-import kwant.continuum
-
-from .symbols import momentum
 
 
 def spin_matrices(s):

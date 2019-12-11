@@ -22,6 +22,7 @@ from sympy.physics.quantum import TensorProduct as kr
 
 from .symbols import *
 
+
 # Helper function definitions
 def valence_term(i, j):
     kvec = [kx, ky, kz]

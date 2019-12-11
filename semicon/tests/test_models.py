@@ -1,15 +1,12 @@
-import pytest
-
-import numpy as np
-import scipy.linalg as la
 import kwant.continuum
+import numpy as np
+import pytest
+import scipy.linalg as la
 import sympy
 
-
+from semicon.kp_models import symbols
 from semicon.misc import prettify, rotation_functionality_available
 from semicon.models import Model
-from semicon.kp_models import symbols
-
 
 sigma_x = np.array(symbols.sigma_x.tolist(), dtype=complex)
 sigma_y = np.array(symbols.sigma_y.tolist(), dtype=complex)

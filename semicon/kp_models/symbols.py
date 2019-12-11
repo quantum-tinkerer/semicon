@@ -1,7 +1,6 @@
 import sympy
 import sympy.physics
 
-
 # Momenta and positions
 momentum_symbols = kx, ky, kz = sympy.symbols("k_x k_y k_z", commutative=False)
 position_symbols = sympy.symbols("x y z", commutative=False)

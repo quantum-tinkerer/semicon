@@ -1,17 +1,14 @@
 import abc
+import inspect
 import os
 import re
-import yaml
-
-import inspect
 from collections import UserDict
 
+import kwant
 import numpy as np
 import pandas as pd
+import yaml
 from scipy.constants import physical_constants as phys_const
-
-import kwant
-
 
 # General constants and globals
 constants = {
