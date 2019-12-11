@@ -66,7 +66,7 @@ class DataBank(UserDict):
 
     def __str__(self):
         output = "Databank:\n"
-        output += "    bank name: {}\n".format(self.name)
+        output += f"    bank name: {self.name}\n"
         output += "    materials: " + ", ".join(list(self))
         return output
 
