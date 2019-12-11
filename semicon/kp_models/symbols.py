@@ -51,7 +51,7 @@ sigma_y = sympy.physics.matrices.msigma(2)
 sigma_z = sympy.physics.matrices.msigma(3)
 
 Jx = sympy.Rational(1, 2) * Matrix(
-    [[0, sqrt(3), 0, 0], [sqrt(3), 0, 2, 0], [0, 2, 0, sqrt(3)], [0, 0, sqrt(3), 0],]
+    [[0, sqrt(3), 0, 0], [sqrt(3), 0, 2, 0], [0, 2, 0, sqrt(3)], [0, 0, sqrt(3), 0]]
 )
 
 Jy = (

@@ -1,7 +1,4 @@
-from . import models
-from . import parameters
-from . import peierls
-
+from . import models, parameters, peierls
 from ._version import __version__
 
 
